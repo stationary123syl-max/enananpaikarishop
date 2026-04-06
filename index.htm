@@ -3,130 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ইনান পাইকারি শপ - প্রিমিয়াম পোর্টাল</title>
+    <title>ইনান পাইকারি শপ | বিশ্বস্ত অনলাইন হোলসেল মার্কেট</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600;700&display=swap');
-        
-        body { 
-            font-family: 'Hind Siliguri', sans-serif; 
-            background: #0f172a;
-            overflow-x: hidden;
-        }
-
-        /* এনিমেটেড ব্যাকগ্রাউন্ড */
-        .bg-animate {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
-        }
-
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 28px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-
-        .input-group input {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: white;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .input-group input:focus {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.4);
-        }
-
-        /* কাস্টম স্ক্রলবার */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        body { font-family: 'Hind Siliguri', sans-serif; background-color: #f8fafc; }
+        .product-card { transition: all 0.3s ease; border: 1px solid #f1f5f9; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.07); border-color: #2563eb; }
+        .dropdown-menu { display: none; position: absolute; right: 0; top: 100%; background: white; min-width: 200px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 12px; z-index: 100; border: 1px solid #f1f5f9; }
+        .dropdown-menu.active { display: block; animation: slideIn 0.2s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-6">
+<body>
 
-    <div class="bg-animate"></div>
+    <div class="bg-slate-900 text-white text-center py-2 text-xs font-medium">
+        সহায়তার জন্য কল করুন: <span class="text-blue-400">+৮৮০ ১৭১২-৩৪৫৬৭৮</span> | সারা বাংলাদেশে দ্রুত ডেলিভারি!
+    </div>
 
-    <div class="glass-card w-full max-w-[480px] p-8 sm:p-12 relative overflow-hidden">
-        <div class="absolute -top-24 -right-24 w-48 height-48 bg-blue-600 rounded-full blur-[100px] opacity-20"></div>
-        
-        <div class="text-center mb-10">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-600/10 rounded-3xl mb-6 border border-blue-500/20">
-                <i class="fas fa-shopping-bag text-4xl text-blue-500"></i>
-            </div>
-            <h1 class="text-3xl font-bold text-white mb-2 tracking-tight">ইনান পাইকারি শপ</h1>
-            <p id="statusText" class="text-slate-400">আপনার ব্যবসা বৃদ্ধি করুন আমাদের সাথে</p>
-        </div>
-
-        <button id="googleBtn" class="w-full flex items-center justify-center gap-3 bg-white/5 border border-white/10 py-3.5 rounded-2xl hover:bg-white/10 transition-all font-bold text-white mb-8 shadow-sm">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" class="w-6" alt="Google">
-            গুগল দিয়ে দ্রুত প্রবেশ
-        </button>
-
-        <div class="relative mb-8 text-center">
-            <hr class="border-white/5">
-            <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#161f31] px-4 text-slate-500 text-[10px] font-bold uppercase tracking-[3px]">অথবা</span>
-        </div>
-
-        <form id="authForm" class="space-y-6">
-            <div class="input-group">
-                <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider ml-1">ইমেইল ঠিকানা</label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"><i class="far fa-envelope"></i></span>
-                    <input type="email" id="userEmail" required class="w-full pl-12 pr-4 py-4 rounded-2xl outline-none" placeholder="name@company.com">
+    <nav class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fa fa-shopping-cart text-xl"></i>
                 </div>
-            </div>
-
-            <div class="input-group">
-                <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider ml-1">পাসওয়ার্ড</label>
-                <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"><i class="fas fa-lock"></i></span>
-                    <input type="password" id="userPass" required class="w-full pl-12 pr-12 py-4 rounded-2xl outline-none" placeholder="••••••••">
-                    <button type="button" id="togglePass" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-blue-500 transition-colors">
-                        <i class="far fa-eye"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div class="flex justify-center py-2">
-                <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" data-theme="dark"></div>
+                <h1 class="text-2xl font-bold text-slate-800 hidden sm:block">ইনান শপ</h1>
             </div>
             
-            <button type="submit" id="submitBtn" class="btn-primary w-full text-white py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3">
-                <span id="btnText">লগইন করুন</span>
-                <i class="fas fa-arrow-right text-sm"></i>
-            </button>
-        </form>
+            <div class="flex-1 max-w-2xl relative">
+                <input type="text" id="searchInput" onkeyup="searchProduct()" class="w-full bg-gray-100 border-none px-5 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-blue-200 transition-all text-sm" placeholder="পণ্যের নাম লিখে খুঁজুন...">
+                <button class="absolute right-4 top-3 text-gray-400"><i class="fa fa-search"></i></button>
+            </div>
 
-        <div class="text-center mt-10">
-            <p class="text-slate-500 text-sm">
-                <span id="switchText">অ্যাকাউন্ট নেই?</span> 
-                <button onclick="toggleAuthMode()" id="switchBtn" class="text-blue-500 font-bold hover:text-blue-400 ml-1 transition-colors">নতুন খুলুন</button>
+            <div class="flex items-center gap-2 sm:gap-5 shrink-0 relative">
+                <div class="relative">
+                    <button id="profileBtn" class="flex items-center gap-2 p-2 text-gray-600 hover:text-blue-600 transition bg-gray-50 rounded-xl px-3 border border-gray-100">
+                        <i class="fa-solid fa-circle-user text-xl"></i>
+                        <span id="userNameDisplay" class="text-xs font-bold hidden md:block">ইউজার</span>
+                    </button>
+                    
+                    <div id="profileDropdown" class="dropdown-menu mt-2 overflow-hidden">
+                        <div class="p-4 border-b border-gray-50">
+                            <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">অ্যাকাউন্ট</p>
+                            <p id="userEmailDisplay" class="text-xs text-gray-600 truncate"></p>
+                        </div>
+                        <button onclick="logout()" class="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2">
+                            <i class="fa-solid fa-right-from-bracket text-red-500"></i> লগআউট করুন
+                        </button>
+                        <button onclick="deleteAccount()" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 border-t border-gray-50">
+                            <i class="fa-solid fa-user-xmark"></i> অ্যাকাউন্ট মুছুন (Delete)
+                        </button>
+                    </div>
+                </div>
+
+                <button class="relative p-2 text-gray-600 hover:text-blue-600 transition">
+                    <i class="fa-solid fa-cart-shopping text-xl"></i>
+                    <span id="cartCount" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">০</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-bold text-slate-800">আমাদের পণ্যসমূহ</h2>
+            <select class="bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm outline-none">
+                <option>নতুন পণ্য</option>
+                <option>কম দাম থেকে বেশি</option>
+                <option>বেশি দাম থেকে কম</option>
+            </select>
+        </div>
+
+        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            </div>
+
+        <div class="mt-16 flex justify-center items-center gap-2">
+            <button class="pagination-btn bg-white border border-gray-200 hover:bg-gray-50 w-10 h-10 rounded-xl flex items-center justify-center"><i class="fa fa-chevron-left"></i></button>
+            <button class="pagination-btn bg-blue-600 text-white w-10 h-10 rounded-xl font-bold">১</button>
+            <button class="pagination-btn bg-white border border-gray-200 hover:bg-gray-50 w-10 h-10 rounded-xl font-bold">২</button>
+            <button class="pagination-btn bg-white border border-gray-200 hover:bg-gray-50 w-10 h-10 rounded-xl flex items-center justify-center"><i class="fa fa-chevron-right"></i></button>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 pt-16 pb-8 mt-20">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-gray-400 text-xs">
+                &copy; ২০২৬ <span class="text-blue-600 font-bold">Inan Wholesale Shop</span>. সকল স্বত্ব সংরক্ষিত।
             </p>
         </div>
-    </div>
+    </footer>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // আপনার Firebase Config (আগেরটাই ঠিক আছে)
         const firebaseConfig = {
             apiKey: "AIzaSyAdbKGR6GALRaTmJFPgwfZAe_JiIcPnZ5U",
             authDomain: "enanprojct.firebaseapp.com",
@@ -138,78 +110,102 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        let isLoginMode = true;
+        const db = getFirestore(app);
 
-        // পাসওয়ার্ড টগল
-        document.getElementById('togglePass').onclick = function() {
-            const passInput = document.getElementById('userPass');
-            const icon = this.querySelector('i');
-            if(passInput.type === 'password') {
-                passInput.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
+        // লগইন স্ট্যাটাস চেক
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "index.html"; // লগইন না থাকলে ফেরত পাঠানো
             } else {
-                passInput.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                document.getElementById('userNameDisplay').innerText = user.displayName || "ইউজার";
+                document.getElementById('userEmailDisplay').innerText = user.email;
+            }
+        });
+
+        // প্রোফাইল ড্রপডাউন টগল
+        const profileBtn = document.getElementById('profileBtn');
+        const dropdown = document.getElementById('profileDropdown');
+
+        profileBtn.onclick = (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('active');
+        };
+
+        window.onclick = () => dropdown.classList.remove('active');
+
+        // লগআউট ফাংশন
+        window.logout = async () => {
+            if(confirm("আপনি কি লগআউট করতে চান?")) {
+                await signOut(auth);
             }
         };
 
-        // মোড সুইচিং
-        window.toggleAuthMode = () => {
-            isLoginMode = !isLoginMode;
-            document.getElementById('btnText').innerText = isLoginMode ? 'লগইন করুন' : 'অ্যাকাউন্ট তৈরি করুন';
-            document.getElementById('switchBtn').innerText = isLoginMode ? 'নতুন খুলুন' : 'লগইন করুন';
-            document.getElementById('statusText').innerText = isLoginMode ? 'আপনার ব্যবসা বৃদ্ধি করুন আমাদের সাথে' : 'ইনান শপে নতুন মার্চেন্ট হিসেবে যুক্ত হোন';
-            document.getElementById('switchText').innerText = isLoginMode ? 'অ্যাকাউন্ট নেই?' : 'অ্যাকাউন্ট আছে?';
+        // অ্যাকাউন্ট ডিলিট
+        window.deleteAccount = async () => {
+            const user = auth.currentUser;
+            if (user) {
+                if (confirm("সতর্কতা: আপনি কি নিশ্চিতভাবে আপনার অ্যাকাউন্টটি চিরতরে মুছে ফেলতে চান? এটি আর ফিরে পাওয়া যাবে না।")) {
+                    try {
+                        await deleteUser(user);
+                        alert("আপনার অ্যাকাউন্টটি সফলভাবে মুছে ফেলা হয়েছে।");
+                        window.location.href = "index.html";
+                    } catch (error) {
+                        alert("নিরাপত্তাজনিত কারণে আপনাকে আবার লগইন করে এটি চেষ্টা করতে হবে।");
+                    }
+                }
+            }
         };
 
-        // ফর্ম সাবমিট
-        document.getElementById('authForm').onsubmit = async (e) => {
-            e.preventDefault();
-            
-            // ক্যাপচা চেক (Demo validation)
-            const response = grecaptcha.getResponse();
-            if(response.length == 0) {
-                alert("অনুগ্রহ করে 'আমি রোবট নই' বক্সে টিক দিন!");
+        //Firestore থেকে পণ্য লোড করা
+        const productGrid = document.getElementById('productGrid');
+        const q = query(collection(db, "products"), orderBy("name"));
+
+        onSnapshot(q, (snapshot) => {
+            productGrid.innerHTML = "";
+            if (snapshot.empty) {
+                productGrid.innerHTML = "<p class='col-span-full text-center text-gray-400 py-10'>কোনো পণ্য পাওয়া যায়নি!</p>";
                 return;
             }
-
-            const btn = document.getElementById('submitBtn');
-            const email = document.getElementById('userEmail').value;
-            const pass = document.getElementById('userPass').value;
-
-            btn.disabled = true;
-            btn.style.opacity = '0.7';
-            document.getElementById('btnText').innerText = 'প্রসেসিং হচ্ছে...';
-
-            try {
-                if (isLoginMode) {
-                    await signInWithEmailAndPassword(auth, email, pass);
-                } else {
-                    await createUserWithEmailAndPassword(auth, email, pass);
-                    alert("স্বাগতম! আপনার অ্যাকাউন্ট তৈরি হয়েছে।");
-                }
-            } catch (error) {
-                alert("ভুল ইমেইল বা পাসওয়ার্ড! আবার চেষ্টা করুন।");
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                document.getElementById('btnText').innerText = isLoginMode ? 'লগইন করুন' : 'অ্যাকাউন্ট তৈরি করুন';
-            }
-        };
-
-        // গুগল লগইন
-        document.getElementById('googleBtn').onclick = async () => {
-            const provider = new GoogleAuthProvider();
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (err) {
-                alert("গুগল কানেকশন সমস্যা! আবার ট্রাই করুন।");
-            }
-        };
-
-        // লগইন চেক
-        onAuthStateChanged(auth, (user) => {
-            if (user) window.location.href = "home.html";
+            snapshot.forEach((doc) => {
+                const p = doc.data();
+                productGrid.innerHTML += `
+                    <div class="product-card bg-white p-3 rounded-2xl group relative">
+                        <div class="overflow-hidden rounded-xl bg-gray-50 mb-3 aspect-square">
+                            <img src="${p.img || 'https://via.placeholder.com/400'}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        </div>
+                        <h4 class="text-xs sm:text-sm font-semibold text-slate-700 line-clamp-2 h-10 mb-2">${p.name}</h4>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-blue-600 font-bold text-sm sm:text-base">৳ ${p.price}</span>
+                        </div>
+                        <button onclick="addToCart('${p.name}')" class="w-full bg-blue-50 text-blue-600 py-2 rounded-xl text-xs font-bold hover:bg-blue-600 hover:text-white transition">কিনুন</button>
+                    </div>
+                `;
+            });
         });
+    </script>
+
+    <script>
+        // কার্ট কাউন্টার ডেমো
+        let count = 0;
+        function addToCart(name) {
+            count++;
+            document.getElementById('cartCount').innerText = count;
+            alert(name + " কার্টে যোগ করা হয়েছে!");
+        }
+
+        // লোকাল সার্চ ফাংশন
+        function searchProduct() {
+            const val = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.product-card');
+            cards.forEach(card => {
+                const name = card.querySelector('h4').innerText.toLowerCase();
+                if (name.includes(val)) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
     </script>
 </body>
 </html>
