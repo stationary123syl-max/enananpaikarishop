@@ -30,6 +30,15 @@
     appId: "1:892424923254:web:4b40a860059603ff8b1757",
     measurementId: "G-EPEX48897T"
   };
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const auth = getAuth();
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        // যদি লগইন না থাকে, তবে লগইন পেজে ফেরত পাঠাবে
+        window.location.href = "index.html";
+    }
+});
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
