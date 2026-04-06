@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ইনান শপ | অ্যাডমিন কন্ট্রোল প্যানেল</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600;700&display=swap');
+        body { font-family: 'Hind Siliguri', sans-serif; background-color: #f0f4f8; }
+        .sidebar-link:hover { background: rgba(37, 99, 235, 0.1); color: #2563eb; }
+        .admin-card { transition: all 0.3s ease; }
+        .admin-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    </style>
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  // ফায়ারস্টোর ইমপোর্ট করা হচ্ছে
+  import { getFirestore, collection, addDoc, getDocs, onSnapshot, deleteDoc, doc, query, orderBy } 
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAdbKGR6GALRaTmJFPgwfZAe_JiIcPnZ5U",
+    authDomain: "enanprojct.firebaseapp.com",
+    projectId: "enanprojct",
+    storageBucket: "enanprojct.firebasestorage.app",
+    messagingSenderId: "892424923254",
+    appId: "1:892424923254:web:4b40a860059603ff8b1757",
+    measurementId: "G-EPEX48897T"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // গ্লোবাল এক্সেস (সহজ ব্যবহারের জন্য)
+  window.db = db;
+  window.fsCollection = collection;
+  window.fsAddDoc = addDoc;
+  window.fsOnSnapshot = onSnapshot;
+  window.fsDoc = doc;
+  window.fsDeleteDoc = deleteDoc;
+  window.fsQuery = query;
+  window.fsOrderBy = orderBy;
+</script>
+</head>
+<body class="flex">
+
+    <aside class="w-64 bg-white h-screen sticky top-0 border-r border-gray-200 hidden md:block">
+        <div class="p-6">
+            <h1 class="text-xl font-bold text-blue-600 flex items-center gap-2">
+                <i class="fa fa-shield-halved"></i> ইনান কন্ট্রোল
+            </h1>
+        </div>
+        <nav class="mt-4 px-4 space-y-2">
+            <a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-blue-600 bg-blue-50 font-bold">
+                <i class="fa fa-plus-circle"></i> নতুন পণ্য যোগ
+            </a>
+            <a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 transition">
+                <i class="fa fa-box"></i> ইনভেন্টরি
+            </a>
+            <a href="#" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 transition">
+                <i class="fa fa-cart-arrow-down"></i> অর্ডারসমূহ
+            </a>
+            <a href="home.html" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 transition border-t pt-5">
+                <i class="fa fa-eye"></i> মেইন সাইট দেখুন
+            </a>
+        </nav>
+    </aside>
+
+    <main class="flex-1 p-4 md:p-8">
+        <header class="flex justify-between items-center mb-10">
+            <h2 class="text-2xl font-bold text-gray-800">পণ্য ম্যানেজমেন্ট</h2>
+            <div class="flex items-center gap-4">
+                <span class="text-sm text-gray-500">স্বাগতম, অ্যাডমিন ইনান</span>
+                <div class="w-10 h-10 bg-blue-600 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-white">
+                    <i class="fa fa-user"></i>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-gray-100 h-fit">
+                <h3 class="text-lg font-bold text-gray-800 mb-6">নতুন পণ্য আপলোড</h3>
+                <form id="productForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2">পণ্যের নাম</label>
+                        <input type="text" id="pName" class="w-full bg-gray-50 border-none px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-100" placeholder="উদা: স্মার্ট ওয়াচ">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">মূল্য (৳)</label>
+                            <input type="number" id="pPrice" class="w-full bg-gray-50 border-none px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-100" placeholder="১২০০">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase mb-2">পুরানো মূল্য</label>
+                            <input type="number" id="pOldPrice" class="w-full bg-gray-50 border-none px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-100" placeholder="১৫০০">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase mb-2">ছবির লিঙ্ক (URL)</label>
+                        <input type="text" id="pImg" class="w-full bg-gray-50 border-none px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-blue-100" placeholder="https://image.url">
+                    </div>
+                    <button type="button" onclick="addProduct()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all active:scale-95 mt-4">
+                        পণ্যটি যুক্ত করুন
+                    </button>
+                </form>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-50 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-800">সাম্প্রতিক পণ্যসমূহ</h3>
+                        <span class="text-xs bg-green-100 text-green-600 px-3 py-1 rounded-full font-bold">লাইভ ডাটা</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-400 text-[10px] uppercase tracking-widest font-bold">
+                                    <th class="p-6 text-center">ছবি</th>
+                                    <th class="p-6">পণ্যের নাম</th>
+                                    <th class="p-6">মূল্য</th>
+                                    <th class="p-6 text-center">অ্যাকশন</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminProductList" class="divide-y divide-gray-50">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ডেমো ডাটাবেস (লোকাল স্টোরেজ ব্যবহার করে)
+        let productData = JSON.parse(localStorage.getItem('products')) || [];
+
+        function addProduct() {
+    const name = document.getElementById('pName').value;
+    const price = document.getElementById('pPrice').value;
+    const oldPrice = document.getElementById('pOldPrice').value;
+    const img = document.getElementById('pImg').value;
+
+    if(!name || !price || !img) {
+        alert("সব তথ্য দিন!");
+        return;
+    }
+
+    // ফায়ারবেসে ডেটা পাঠানো
+    const productListRef = window.dbRef(window.db, 'products');
+    const newProductRef = window.dbPush(productListRef);
+    
+    window.dbSet(newProductRef, {
+        id: Date.now(),
+        name: name,
+        price: price,
+        oldPrice: oldPrice,
+        img: img
+    }).then(() => {
+        document.getElementById('productForm').reset();
+        alert("পণ্যটি ফায়ারবেসে সেভ হয়েছে!");
+    });
+}
+
+        function renderAdminProducts() {
+            const list = document.getElementById('adminProductList');
+            list.innerHTML = productData.map(p => `
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="p-4 text-center">
+                        <img src="${p.img}" class="w-12 h-12 rounded-xl object-cover mx-auto border shadow-sm">
+                    </td>
+                    <td class="p-4 font-bold text-gray-700 text-sm">${p.name}</td>
+                    <td class="p-4 text-blue-600 font-bold">৳ ${p.price}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="deleteProduct(${p.id})" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition">
+                            <i class="fa fa-trash-can text-sm"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function deleteProduct(id) {
+            if(confirm("আপনি কি এটি ডিলিট করতে চান?")) {
+                productData = productData.filter(p => p.id !== id);
+                localStorage.setItem('products', JSON.stringify(productData));
+                renderAdminProducts();
+            }
+        }
+
+        window.onload = renderAdminProducts;
+    </script>
+</body>
+</html>

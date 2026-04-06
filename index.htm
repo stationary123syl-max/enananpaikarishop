@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ইনান পাইকারি শপ - অ্যাডমিন ও ইউজার পোর্টাল</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600&display=swap');
+        
+        body { 
+            font-family: 'Hind Siliguri', sans-serif; 
+            background-color: #f0f2f5; 
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* কার্ডের জন্য আধুনিক শ্যাডো */
+        .glass-card { 
+            background: white; 
+            border-radius: 20px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04); 
+        }
+
+        /* মোবাইলে বাটন ট্যাপ ইফেক্ট */
+        .btn-active:active {
+            transform: scale(0.96);
+        }
+
+        /* কাস্টম স্ক্রলবার (টেবিলের জন্য) */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, onSnapshot, query, orderBy } 
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  // আপনার ফায়ারবেস কনফিগারেশন
+  const firebaseConfig = {
+    apiKey: "AIzaSyAdbKGR6GALRaTmJFPgwfZAe_JiIcPnZ5U",
+    authDomain: "enanprojct.firebaseapp.com",
+    projectId: "enanprojct",
+    storageBucket: "enanprojct.firebasestorage.app",
+    messagingSenderId: "892424923254",
+    appId: "1:892424923254:web:4b40a860059603ff8b1757",
+    measurementId: "G-EPEX48897T"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // প্রোডাক্ট লোড করার ফাংশন
+  function loadProducts() {
+    const productGrid = document.getElementById('productGrid');
+    
+    // 'products' কালেকশন থেকে ডাটা আনা (নতুন প্রোডাক্ট আগে দেখাবে)
+    const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+
+    // রিয়েল-টাইম আপডেট লিসেনার
+    onSnapshot(q, (querySnapshot) => {
+      productGrid.innerHTML = ""; // আগের ডাটা ক্লিয়ার করা
+
+      if (querySnapshot.empty) {
+        productGrid.innerHTML = `
+          <div class="col-span-full text-center py-20">
+            <i class="fa fa-box-open text-5xl text-gray-200 mb-4"></i>
+            <p class="text-gray-400 font-bold">বর্তমানে কোনো পণ্য নেই!</p>
+          </div>`;
+        return;
+      }
+
+      querySnapshot.forEach((doc) => {
+        const p = doc.data();
+        const id = doc.id;
+        
+        // গ্রিডে প্রোডাক্ট কার্ড যোগ করা
+        productGrid.innerHTML += `
+          <div class="product-card bg-white p-3 rounded-2xl group relative border border-gray-50 shadow-sm overflow-hidden transition-all duration-300">
+            <div class="overflow-hidden rounded-xl bg-gray-50 mb-3 aspect-square relative">
+                <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="${p.name}">
+                ${p.oldPrice > p.price ? `<span class="absolute top-2 left-2 bg-orange-500 text-white text-[10px] px-2 py-1 rounded-lg font-bold shadow-sm">ছাড়!</span>` : ''}
+            </div>
+            <h4 class="text-xs sm:text-sm font-semibold text-slate-700 line-clamp-2 h-10 mb-2">${p.name}</h4>
+            <div class="flex items-center justify-between mb-3">
+                <div>
+                    <span class="text-blue-600 font-bold text-sm sm:text-lg">৳ ${p.price}</span>
+                    ${p.oldPrice ? `<span class="text-gray-400 text-[10px] line-through ml-1">৳ ${p.oldPrice}</span>` : ''}
+                </div>
+            </div>
+            <button onclick="addToCart('${id}', '${p.name}', ${p.price}, '${p.img}')" 
+                class="w-full bg-blue-50 text-blue-600 py-2.5 rounded-xl text-xs font-bold hover:bg-blue-600 hover:text-white transition-all active:scale-95 flex items-center justify-center gap-2">
+                <i class="fa fa-cart-plus"></i> কিনুন
+            </button>
+          </div>
+        `;
+      });
+    });
+  }
+
+  // পেজ লোড হলে ফাংশনটি কল হবে
+  window.addEventListener('DOMContentLoaded', loadProducts);
+</script>
+</head>
+<body class="min-h-screen antialiased">
+
+    <div id="authContainer" class="flex items-center justify-center min-h-screen p-4 sm:p-8">
+        <div class="glass-card w-full max-w-[400px] p-6 sm:p-10 border border-gray-100">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-blue-600 mb-2">ইনান পাইকারি শপ</h1>
+                <p class="text-gray-400 text-sm tracking-wide">নিরাপদ পাইকারি কেনাবেচা</p>
+            </div>
+
+            <button onclick="googleLogin()" class="btn-active w-full flex items-center justify-center gap-3 bg-white border border-gray-200 py-3 rounded-xl hover:bg-gray-50 transition-all font-semibold text-gray-700 shadow-sm mb-6">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" class="w-5" alt="Google">
+                গুগল দিয়ে প্রবেশ
+            </button>
+
+            <div class="relative mb-8 text-center">
+                <hr class="border-gray-100">
+                <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-gray-400 text-[10px] uppercase tracking-[2px]">অথবা ইমেইল ব্যবহার করুন</span>
+            </div>
+
+            <form id="authForm" onsubmit="handleSubmit(event)" class="space-y-5">
+                <div id="nameField" class="hidden animate-fade-in">
+                    <label class="block text-gray-600 mb-1.5 text-sm font-semibold ml-1">আপনার নাম</label>
+                    <input type="text" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all placeholder:text-gray-300" placeholder="যেমন: আব্দুর রহিম">
+                </div>
+
+                <div>
+                    <label class="block text-gray-600 mb-1.5 text-sm font-semibold ml-1">ইমেইল ঠিকানা</label>
+                    <input type="email" id="userEmail" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all placeholder:text-gray-300" placeholder="example@mail.com">
+                </div>
+
+                <div class="relative">
+                    <label class="block text-gray-600 mb-1.5 text-sm font-semibold ml-1">পাসওয়ার্ড</label>
+                    <input type="password" id="userPass" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50 outline-none transition-all placeholder:text-gray-300" placeholder="••••••••">
+                    <button type="button" onclick="togglePass()" class="absolute right-4 top-[38px] text-gray-400 hover:text-blue-600 transition-colors">
+                        <i id="passIcon" class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-active w-full bg-blue-600 text-white py-4 rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all text-lg">লগইন করুন</button>
+            </form>
+
+            <div class="text-center mt-10">
+                <p class="text-gray-500 text-sm">
+                    <span id="toggleText">অ্যাকাউন্ট নেই?</span> 
+                    <button onclick="toggleAuth()" id="toggleBtn" class="text-blue-600 font-bold hover:underline ml-1">নতুন খুলুন</button>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminPanel" class="hidden w-full max-w-6xl mx-auto p-4 sm:p-10">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 bg-white p-6 rounded-2xl shadow-sm border border-gray-50">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">অ্যাডমিন ড্যাশবোর্ড</h2>
+                <p class="text-gray-500 text-sm">ম্যানেজ করুন আপনার শপ ইউজারদের</p>
+            </div>
+            <button onclick="logout()" class="w-full sm:w-auto bg-red-50 text-red-600 px-6 py-2.5 rounded-xl font-bold hover:bg-red-100 transition-all">লগআউট</button>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-50 overflow-hidden">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left whitespace-nowrap">
+                    <thead class="bg-gray-50/50 border-b border-gray-100">
+                        <tr>
+                            <th class="p-5 font-semibold text-gray-600 text-sm">ইউজার ডিটেইলস</th>
+                            <th class="p-5 font-semibold text-gray-600 text-sm text-center">রোল</th>
+                            <th class="p-5 font-semibold text-gray-600 text-sm text-center">স্ট্যাটাস</th>
+                            <th class="p-5 font-semibold text-gray-600 text-sm text-right">অ্যাকশন</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        <tr class="hover:bg-gray-50/50 transition-colors">
+                            <td class="p-5">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">অ</div>
+                                    <div>
+                                        <div class="font-bold text-gray-800">আব্দুর রহিম</div>
+                                        <div class="text-xs text-gray-400 font-medium tracking-tight">rahim@mail.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-5 text-center text-xs">
+                                <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full font-bold">User</span>
+                            </td>
+                            <td class="p-5 text-center text-xs">
+                                <span class="text-green-500 font-bold">● Active</span>
+                            </td>
+                            <td class="p-5 text-right space-x-1">
+                                <button onclick="makeAdmin(this)" class="text-[11px] bg-blue-50 text-blue-600 px-3 py-2 rounded-lg font-bold hover:bg-blue-100 transition-all">Make Admin</button>
+                                <button onclick="blockUser(this)" class="text-[11px] bg-red-50 text-red-600 px-3 py-2 rounded-lg font-bold hover:bg-red-100 transition-all">Block</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isLogin = true;
+
+        function togglePass() {
+            const passInput = document.getElementById('userPass');
+            const icon = document.getElementById('passIcon');
+            passInput.type = passInput.type === 'password' ? 'text' : 'password';
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        }
+
+        function toggleAuth() {
+            isLogin = !isLogin;
+            const nameField = document.getElementById('nameField');
+            const submitBtn = document.getElementById('submitBtn');
+            const toggleText = document.getElementById('toggleText');
+            const toggleBtn = document.getElementById('toggleBtn');
+
+            nameField.classList.toggle('hidden');
+            submitBtn.innerText = isLogin ? 'লগইন করুন' : 'সাইন-আপ করুন';
+            toggleText.innerText = isLogin ? 'অ্যাকাউন্ট নেই?' : 'অ্যাকাউন্ট আছে?';
+            toggleBtn.innerText = isLogin ? 'নতুন খুলুন' : 'লগইন করুন';
+        }
+
+        function handleSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('userEmail').value;
+
+            // অ্যাডমিন টেস্ট লগইন
+            if (isLogin && email === 'admin@inan.com') {
+                document.getElementById('authContainer').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                return;
+            }
+
+            alert(isLogin ? 'লগইন সফল হচ্ছে...' : 'সাইন-আপ সফল! ইমেইল চেক করুন।');
+        }
+
+        function blockUser(btn) {
+            if(confirm('ইউজারকে ব্লক করতে চান?')) {
+                const row = btn.closest('tr');
+                row.style.opacity = '0.4';
+                btn.innerText = 'Blocked';
+                btn.disabled = true;
+            }
+        }
+
+        function makeAdmin(btn) {
+            alert('সফল! অ্যাডমিন এক্সেস দেওয়া হয়েছে।');
+        }
+
+        function logout() { location.reload(); }
+        function googleLogin() { alert('গুগল লগইন ওপেন হচ্ছে...'); }
+    </script>
+</body>
+</html>

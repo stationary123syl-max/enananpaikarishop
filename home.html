@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ইনান পাইকারি শপ | বিশ্বস্ত অনলাইন হোলসেল মার্কেট</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;600;700&display=swap');
+        body { font-family: 'Hind Siliguri', sans-serif; background-color: #f8fafc; }
+        .product-card { transition: all 0.3s ease; border: 1px solid #f1f5f9; }
+        .product-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.07); border-color: #2563eb; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .pagination-btn { width: 40px; height: 40px; display: flex; align-items:  center; justify-content: center; border-radius: 10px; transition: all 0.2s; }
+        .pagination-btn.active { background-color: #2563eb; color: white; }
+    </style>
+    <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  // ফায়ারস্টোর ইমপোর্ট করা হচ্ছে
+  import { getFirestore, collection, addDoc, getDocs, onSnapshot, deleteDoc, doc, query, orderBy } 
+  from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAdbKGR6GALRaTmJFPgwfZAe_JiIcPnZ5U",
+    authDomain: "enanprojct.firebaseapp.com",
+    projectId: "enanprojct",
+    storageBucket: "enanprojct.firebasestorage.app",
+    messagingSenderId: "892424923254",
+    appId: "1:892424923254:web:4b40a860059603ff8b1757",
+    measurementId: "G-EPEX48897T"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // গ্লোবাল এক্সেস (সহজ ব্যবহারের জন্য)
+  window.db = db;
+  window.fsCollection = collection;
+  window.fsAddDoc = addDoc;
+  window.fsOnSnapshot = onSnapshot;
+  window.fsDoc = doc;
+  window.fsDeleteDoc = deleteDoc;
+  window.fsQuery = query;
+  window.fsOrderBy = orderBy;
+</script>
+</head>
+<body>
+
+    <div class="bg-slate-900 text-white text-center py-2 text-xs font-medium">
+        সহায়তার জন্য কল করুন: <span class="text-blue-400">+৮৮০ ১৭১২-৩৪৫৬৭৮</span> | সারা বাংলাদেশে দ্রুত ডেলিভারি!
+    </div>
+
+    <nav class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-2 shrink-0">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fa fa-shopping-cart text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-800 hidden sm:block">ইনান শপ</h1>
+            </div>
+            
+            <div class="flex-1 max-w-2xl relative">
+                <input type="text" id="searchInput" onkeyup="searchProduct()" class="w-full bg-gray-100 border-none px-5 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-blue-200 transition-all text-sm" placeholder="পণ্যের নাম লিখে খুঁজুন...">
+                <button class="absolute right-4 top-3 text-gray-400"><i class="fa fa-search"></i></button>
+            </div>
+
+            <div class="flex items-center gap-2 sm:gap-5 shrink-0">
+                <button class="p-2 text-gray-600 hover:text-blue-600 transition"><i class="fa-regular fa-user text-xl"></i></button>
+                <button class="relative p-2 text-gray-600 hover:text-blue-600 transition">
+                    <i class="fa-solid fa-cart-shopping text-xl"></i>
+                    <span id="cartCount" class="absolute top-0 right-0 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">০</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+        
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-bold text-slate-800">আমাদের পণ্যসমূহ</h2>
+            <select class="bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm outline-none">
+                <option>নতুন পণ্য</option>
+                <option>কম দাম থেকে বেশি</option>
+                <option>বেশি দাম থেকে কম</option>
+            </select>
+        </div>
+
+        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            </div>
+
+        <div class="mt-16 flex justify-center items-center gap-2">
+            <button class="pagination-btn bg-white border border-gray-200 hover:bg-gray-50"><i class="fa fa-chevron-left"></i></button>
+            <button class="pagination-btn active">১</button>
+            <button class="pagination-btn bg-white border border-gray-200 hover:border-blue-500">২</button>
+            <button class="pagination-btn bg-white border border-gray-200 hover:border-blue-500">৩</button>
+            <button class="pagination-btn bg-white border border-gray-200 hover:border-blue-500">৪</button>
+            <button class="pagination-btn bg-white border border-gray-200 hover:border-blue-500">৫</button>
+            <button class="pagination-btn bg-white border border-gray-200 hover:bg-gray-50"><i class="fa fa-chevron-right"></i></button>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 lg:col-span-1">
+                    <h3 class="text-xl font-bold text-blue-600 mb-5">ইনান পাইকারি শপ</h3>
+                    <p class="text-gray-500 text-sm leading-relaxed mb-6">
+                        ইনান শপ বাংলাদেশের একটি উদীয়মান পাইকারি অনলাইন প্ল্যাটফর্ম। আমরা সরাসরি আমদানিকারক ও প্রস্তুতকারকদের কাছ থেকে পণ্য সংগ্রহ করে গ্রাহকদের কাছে পৌঁছে দিই। আমাদের লক্ষ্য হলো ব্যবসার জন্য সাশ্রয়ী মূল্যে সেরা পণ্য নিশ্চিত করা।
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" class="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-600 hover:text-white transition"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-5">কাস্টমার সার্ভিস</h4>
+                    <ul class="text-gray-500 text-sm space-y-3">
+                        <li><a href="#" class="hover:text-blue-600 transition">হেল্প সেন্টার</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">কিভাবে অর্ডার করবেন?</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">রিটার্ন ও রিফান্ড</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">শিপিং পলিসি</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">শর্তাবলী</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-5">প্রয়োজনীয় লিঙ্ক</h4>
+                    <ul class="text-gray-500 text-sm space-y-3">
+                        <li><a href="#" class="hover:text-blue-600 transition">আমাদের সম্পর্কে</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">যোগাযোগ করুন</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">অ্যাডমিন লগইন</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">ফ্ল্যাশ সেল</a></li>
+                        <li><a href="#" class="hover:text-blue-600 transition">কুপন কোড</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-bold text-slate-800 mb-5">নিরাপদ পেমেন্ট</h4>
+                    <div class="grid grid-cols-3 gap-2 mb-6">
+                        <div class="h-8 bg-gray-100 rounded flex items-center justify-center text-[10px] font-bold text-gray-400">BKASH</div>
+                        <div class="h-8 bg-gray-100 rounded flex items-center justify-center text-[10px] font-bold text-gray-400">NAGAD</div>
+                        <div class="h-8 bg-gray-100 rounded flex items-center justify-center text-[10px] font-bold text-gray-400">VISA</div>
+                    </div>
+                    <h4 class="font-bold text-slate-800 mb-4 text-sm">অ্যাপ ডাউনলোড করুন</h4>
+                    <div class="flex gap-2">
+                        <div class="flex-1 h-10 bg-black rounded-lg flex items-center justify-center text-white gap-2 text-[10px] cursor-pointer">
+                            <i class="fab fa-apple text-lg"></i> App Store
+                        </div>
+                        <div class="flex-1 h-10 bg-black rounded-lg flex items-center justify-center text-white gap-2 text-[10px] cursor-pointer">
+                            <i class="fab fa-google-play text-lg"></i> Google Play
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-gray-400 text-xs text-center md:text-left">
+                    &copy; ২০২৬ <span class="text-blue-600 font-bold">Inan Wholesale Shop</span>. ডিজাইন ও ডেভেলপমেন্ট ইনান টিম।
+                </p>
+                <div class="flex gap-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    <a href="#">Privacy</a>
+                    <a href="#">Cookies</a>
+                    <a href="#">Sitemap</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ১০টি প্রোডাক্টের ডেমো ডাটা
+        const products = [
+            { id: 1, name: "Premium M10 TWS Earbuds", price: 650, oldPrice: 950, img: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400" },
+            { id: 2, name: "Smart Watch Ultra 2", price: 2400, oldPrice: 3200, img: "https://images.unsplash.com/photo-1544117518-30dd067cba61?w=400" },
+            { id: 3, name: "Men's Luxury Wallet", price: 450, oldPrice: 600, img: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=400" },
+            { id: 4, name: "Wireless Bluetooth Mouse", price: 350, oldPrice: 550, img: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=400" },
+            { id: 5, name: "Gaming Mechanical Keyboard", price: 1850, oldPrice: 2200, img: "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=400" },
+            { id: 6, name: "Fast Charging Power Bank", price: 1250, oldPrice: 1600, img: "https://images.unsplash.com/photo-1609091839311-d536801ff24d?w=400" },
+            { id: 7, name: "Premium Leather Belt", price: 380, oldPrice: 500, img: "https://images.unsplash.com/photo-1624222247344-550fb8ecf7c2?w=400" },
+            { id: 8, name: "USB Type-C Hub 7-in-1", price: 1450, oldPrice: 1900, img: "https://images.unsplash.com/photo-1591488320449-011701bb6704?w=400" },
+            { id: 9, name: "LED RGB Strip Light 5M", price: 290, oldPrice: 450, img: "https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=400" },
+            { id: 10, name: "Adjustable Laptop Stand", price: 550, oldPrice: 850, img: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400" },
+        ];
+
+        function renderProducts(data) {
+            const grid = document.getElementById('productGrid');
+            grid.innerHTML = data.map(p => `
+                <div class="product-card bg-white p-3 rounded-2xl group relative">
+                    <div class="overflow-hidden rounded-xl bg-gray-50 mb-3 aspect-square">
+                        <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="${p.name}">
+                    </div>
+                    <h4 class="text-xs sm:text-sm font-semibold text-slate-700 line-clamp-2 h-10 mb-2">${p.name}</h4>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-blue-600 font-bold text-sm sm:text-base">৳ ${p.price}</span>
+                        <span class="text-gray-400 text-[10px] line-through">৳ ${p.oldPrice}</span>
+                    </div>
+                    <button onclick="addToCart(${p.id})" class="w-full bg-blue-50 text-blue-600 py-2 rounded-xl text-xs font-bold hover:bg-blue-600 hover:text-white transition-all active:scale-95">
+                        কিনুন
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // সার্চ ফাংশন
+        function searchProduct() {
+            const val = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = products.filter(p => p.name.toLowerCase().includes(val));
+            renderProducts(filtered);
+        }
+
+        let count = 0;
+        function addToCart(id) {
+            count++;
+            document.getElementById('cartCount').innerText = count;
+            alert("পণ্যটি কার্টে যোগ করা হয়েছে!");
+        }
+        
+
+       
+    // লোকাল স্টোরেজ থেকে পণ্যগুলো নিয়ে আসা
+    function loadProducts() {
+    const productGrid = document.getElementById('productGrid');
+    const productsRef = window.dbRef(window.db, 'products');
+
+    window.dbOnValue(productsRef, (snapshot) => {
+        const data = snapshot.val();
+        productGrid.innerHTML = ""; // আগের লিস্ট ক্লিয়ার করা
+
+        if (data) {
+            Object.keys(data).forEach(key => {
+                const p = data[key];
+                productGrid.innerHTML += `
+                    <div class="product-card bg-white p-3 rounded-2xl group relative">
+                        <div class="overflow-hidden rounded-xl bg-gray-50 mb-3 aspect-square">
+                            <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        </div>
+                        <h4 class="text-xs sm:text-sm font-semibold text-slate-700 line-clamp-2 mb-2">${p.name}</h4>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-blue-600 font-bold">৳ ${p.price}</span>
+                        </div>
+                        <button onclick="addToCart('${p.name}', '${p.price}', '${p.img}')" class="w-full bg-blue-50 text-blue-600 py-2 rounded-xl text-xs font-bold hover:bg-blue-600 hover:text-white transition">
+                            কিনুন
+                        </button>
+                    </div>
+                `;
+            });
+        } else {
+            productGrid.innerHTML = "<p class='col-span-full text-center text-gray-400'>কোনো পণ্য পাওয়া যায়নি।</p>";
+        }
+    });
+}
+
+    // সার্চ করার জন্য উন্নত ফাংশন
+    function searchProduct() {
+        const val = document.getElementById('searchInput').value.toLowerCase();
+        const products = JSON.parse(localStorage.getItem('products')) || [];
+        const filtered = products.filter(p => p.name.toLowerCase().includes(val));
+        
+        // শুধুমাত্র সার্চ করা পণ্যগুলো রেন্ডার করা
+        const grid = document.getElementById('productGrid');
+        grid.innerHTML = filtered.map(p => `
+            <div class="product-card bg-white p-3 rounded-2xl group relative">
+                <div class="overflow-hidden rounded-xl bg-gray-50 mb-3 aspect-square">
+                    <img src="${p.img}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                </div>
+                <h4 class="text-xs sm:text-sm font-semibold text-slate-700 line-clamp-2 h-10 mb-2">${p.name}</h4>
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-blue-600 font-bold text-sm sm:text-base">৳ ${p.price}</span>
+                </div>
+                <button onclick="addToCart('${p.name}')" class="w-full bg-blue-50 text-blue-600 py-2 rounded-xl text-xs font-bold hover:bg-blue-600 hover:text-white transition">কিনুন</button>
+            </div>
+        `).join('');
+    }
+
+        // পেজ লোড হওয়ার সাথে সাথে পণ্যগুলো দেখাবে
+    window.onload = loadProducts;
+</script>
+</body>
+</html>
