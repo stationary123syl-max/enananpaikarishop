@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>techNet Admin Panel</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Firebase -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-database-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-storage-compat.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+<style>
+/* ============================================================
+   OBFUSCATION LAYER - এলোমেলো class নাম (security layer)
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Poppins:wght@400;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --r:#e53935;--rd:#b71c1c;--rl:#ffebee;
+  --g:#FFD600;--bg:#f0f2f5;--sb:#1a1a2e;
+  --sbh:#16213e;--sa:#e53935;
+  --w:#fff;--b:#e0e0e0;--t:#222;--m:#777;
+  --grn:#4CAF50;--org:#FF9800;--blu:#1976D2;--pur:#7B1FA2;
+}
+body{font-family:'Hind Siliguri',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden}
+
+/* === LOGIN === */
+#xLP{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:16px}
+.xlc{background:#fff;border-radius:16px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.xll{text-align:center;margin-bottom:28px}
+.xll h1{font-family:'Poppins',sans-serif;font-size:26px;font-weight:800;color:var(--r)}
+.xll h1 span{color:var(--g)}
+.xll p{font-size:11px;color:var(--m);letter-spacing:2px;margin-top:2px}
+.xlb{display:inline-block;background:var(--rl);color:var(--r);font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:18px}
+.xlf{margin-bottom:16px}
+.xlf label{display:block;font-size:13px;font-weight:600;color:#555;margin-bottom:5px}
+.xlf input{width:100%;padding:12px 14px;border:2px solid var(--b);border-radius:8px;font-size:14px;font-family:inherit;outline:none;transition:border .2s}
+.xlf input:focus{border-color:var(--r)}
+.xlbtn{width:100%;background:var(--r);color:#fff;border:none;padding:13px;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .2s}
+.xlbtn:hover{background:var(--rd)}
+.xle{background:#ffebee;color:var(--r);font-size:13px;padding:10px 14px;border-radius:6px;margin-top:12px;display:none;border-left:3px solid var(--r)}
+
+/* === ADMIN LAYOUT === */
+#xAP{display:none;min-height:100vh}
+.xaw{display:flex;min-height:100vh;position:relative}
+
+/* SIDEBAR */
+.xsb{width:240px;background:var(--sb);position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100;transition:transform .3s,width .3s;scrollbar-width:none}
+.xsb::-webkit-scrollbar{display:none}
+.xsbl{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.xsbl h2{font-family:'Poppins',sans-serif;font-size:17px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden}
+.xsbl h2 span{color:var(--g)}
+.xsbl small{display:block;font-size:10px;color:rgba(255,255,255,.4);letter-spacing:1.5px;margin-top:2px}
+.xrb{display:inline-block;background:var(--r);color:#fff;font-size:10px;padding:3px 8px;border-radius:10px;margin-top:6px;white-space:nowrap}
+.xsu{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;color:rgba(255,255,255,.5)}
+.xsu span{display:block;color:rgba(255,255,255,.85);font-weight:600;font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xsn{padding:8px 0}
+.xns{padding:10px 16px 4px;font-size:10px;letter-spacing:1.5px;color:rgba(255,255,255,.3);font-weight:600;white-space:nowrap}
+.xni{display:flex;align-items:center;gap:10px;padding:10px 16px;color:rgba(255,255,255,.65);font-size:13px;cursor:pointer;transition:all .2s;border-left:3px solid transparent;white-space:nowrap;text-decoration:none}
+.xni:hover{background:var(--sbh);color:#fff;border-left-color:rgba(229,57,53,.5)}
+.xni.active{background:rgba(229,57,53,.15);color:#fff;border-left-color:var(--r)}
+.xni i{width:18px;text-align:center;font-size:14px;flex-shrink:0}
+.xni .xbc{margin-left:auto;background:var(--r);color:#fff;font-size:10px;padding:2px 7px;border-radius:10px}
+/* Mobile sidebar toggle */
+.xsb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.xsb-overlay.open{display:block}
+.xhb{display:none;position:fixed;top:14px;left:14px;z-index:200;background:var(--r);border:none;color:#fff;width:38px;height:38px;border-radius:8px;cursor:pointer;font-size:15px;align-items:center;justify-content:center}
+
+/* MAIN CONTENT */
+.xmc{margin-left:240px;flex:1;min-height:100vh;transition:margin .3s}
+.xtb{background:#fff;padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b);position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.xtbl h3{font-size:16px;font-weight:700;color:var(--t)}
+.xtbl p{font-size:11px;color:var(--m)}
+.xtbr{display:flex;align-items:center;gap:10px}
+.xtic{position:relative;width:34px;height:34px;border-radius:50%;background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--m);font-size:13px;transition:all .2s;text-decoration:none}
+.xtic:hover{background:var(--rl);color:var(--r)}
+.xav{width:34px;height:34px;border-radius:50%;background:var(--r);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;cursor:pointer}
+.xlo{background:none;border:1px solid var(--b);color:var(--m);padding:6px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;transition:all .2s}
+.xlo:hover{border-color:var(--r);color:var(--r)}
+
+/* PAGES */
+.xpg{display:none;padding:20px}
+.xpg.active{display:block}
+
+/* STAT CARDS */
+.xsg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.xsc{background:#fff;border-radius:12px;padding:18px 20px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.xsi{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0}
+.xsif p{font-size:12px;color:var(--m);margin-bottom:2px}
+.xsif h3{font-size:22px;font-weight:800;color:var(--t)}
+.xsif small{font-size:11px;color:var(--grn)}
+
+/* CARDS */
+.xcd{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.04);margin-bottom:16px}
+.xcdh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.xcdt{font-size:14px;font-weight:700;color:var(--t);display:flex;align-items:center;gap:8px}
+.xcdt i{color:var(--r)}
+
+/* BUTTONS */
+.xbt{padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.xbr{background:var(--r);color:#fff}
+.xbr:hover{background:var(--rd)}
+.xbo{background:none;border:1.5px solid var(--b);color:var(--t)}
+.xbo:hover{border-color:var(--r);color:var(--r)}
+.xbg{background:var(--grn);color:#fff}
+.xbog{background:var(--org);color:#fff}
+.xbb{background:var(--blu);color:#fff}
+.xbp{background:var(--pur);color:#fff}
+.xbs{padding:6px 10px;font-size:12px}
+.xbd{background:#fff;border:1.5px solid #ffcdd2;color:var(--r)}
+.xbd:hover{background:#ffebee}
+
+/* FORM */
+.xfr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.xfg{margin-bottom:12px}
+.xfg label{display:block;font-size:12px;font-weight:600;color:#555;margin-bottom:4px}
+.xfg input,.xfg select,.xfg textarea{width:100%;padding:9px 12px;border:1.5px solid var(--b);border-radius:6px;font-size:13px;outline:none;transition:border .2s;font-family:inherit;background:#fff}
+.xfg input:focus,.xfg select:focus,.xfg textarea:focus{border-color:var(--r)}
+.xfg textarea{resize:vertical;min-height:75px}
+.xfc{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-top:4px}
+.xfc input{width:auto;cursor:pointer}
+
+/* TABLE */
+.xtw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:480px}
+thead tr{background:#fafafa;border-bottom:2px solid var(--b)}
+th{padding:9px 12px;text-align:left;font-weight:600;color:#555;font-size:12px;white-space:nowrap}
+tbody tr{border-bottom:1px solid #f5f5f5;transition:background .15s}
+tbody tr:hover{background:#fafafa}
+td{padding:10px 12px;color:var(--t);vertical-align:middle}
+.xsbg{display:inline-block;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
+.xsp{background:#fff3e0;color:#E65100}
+.xspr{background:#e3f2fd;color:#1565C0}
+.xss{background:#e8f5e9;color:#2E7D32}
+.xsd{background:#e8f5e9;color:#1B5E20}
+.xsc2{background:#ffebee;color:var(--r)}
+
+/* PRODUCT THUMB */
+.xpt{width:42px;height:42px;border-radius:8px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid var(--b);overflow:hidden;flex-shrink:0}
+.xpt img{width:100%;height:100%;object-fit:cover}
+
+/* UPLOAD */
+.xua{border:2px dashed var(--b);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:#fafafa}
+.xua:hover{border-color:var(--r);background:var(--rl)}
+.xua i{font-size:28px;color:var(--m);margin-bottom:6px;display:block}
+.xua p{font-size:13px;color:var(--m)}
+.xua small{font-size:11px;color:#aaa}
+.xupv{width:100%;height:150px;border-radius:8px;object-fit:cover;margin-top:10px;display:none;border:1px solid var(--b)}
+.xupr{height:4px;background:#f0f0f0;border-radius:2px;margin-top:8px;overflow:hidden;display:none}
+.xuprb{height:100%;background:var(--grn);border-radius:2px;width:0%;transition:width .3s}
+.xpub{background:#f5f5f5;border:1px solid var(--b);border-radius:6px;padding:9px 12px;font-size:11px;color:#555;word-break:break-all;margin-top:8px;display:none}
+.xpub a{color:var(--blu);text-decoration:none}
+
+/* SETTINGS */
+.xstg{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+
+/* MODAL */
+.xmo{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;display:none;align-items:center;justify-content:center;padding:16px}
+.xmo.open{display:flex}
+.xmb{background:#fff;border-radius:12px;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;padding:24px;position:relative}
+.xmb.xmbw{max-width:760px}
+.xmt{font-size:17px;font-weight:800;color:var(--r);margin-bottom:3px}
+.xms{font-size:13px;color:var(--m);margin-bottom:18px}
+.xmc2{position:absolute;top:14px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#aaa}
+.xmc2:hover{color:#333}
+
+/* TOAST */
+.xtst{position:fixed;bottom:20px;right:20px;padding:12px 18px;border-radius:8px;font-size:13px;color:#fff;display:none;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25);font-family:'Hind Siliguri',sans-serif;max-width:300px}
+.xtst.show{display:flex;align-items:center;gap:8px;animation:xtin .3s ease}
+.xtst.success{background:#323232}
+.xtst.error{background:#c62828}
+@keyframes xtin{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* ADMIN LIST */
+.xali{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--b);border-radius:8px;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+.xalinf{display:flex;align-items:center;gap:10px}
+.xalav{width:36px;height:36px;border-radius:50%;background:var(--r);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
+.xaln{font-size:14px;font-weight:600}
+.xalp{font-size:12px;color:var(--m)}
+.xjrb{background:#e3f2fd;color:#1565C0;font-size:11px;padding:3px 10px;border-radius:10px;font-weight:700}
+.xsrb{background:#fff3e0;color:#E65100;font-size:11px;padding:3px 10px;border-radius:10px;font-weight:700}
+.xeas{text-align:center;padding:50px 20px;color:var(--m)}
+.xeas i{font-size:44px;color:#ddd;display:block;margin-bottom:10px}
+
+/* QUICK ACTIONS */
+.xqa{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+.xqac{background:#fff;border-radius:10px;padding:14px;text-align:center;cursor:pointer;border:2px solid transparent;transition:all .2s}
+.xqac:hover{border-color:var(--r);transform:translateY(-2px);box-shadow:0 4px 16px rgba(229,57,53,.15)}
+.xqac i{font-size:22px;color:var(--r);display:block;margin-bottom:6px}
+.xqac span{font-size:12px;font-weight:600;color:#555}
+
+/* SEARCH BOX */
+.xsbox{display:flex;align-items:center;gap:8px;background:#f5f5f5;border:1.5px solid var(--b);border-radius:6px;padding:7px 12px;flex:1;max-width:280px;min-width:140px}
+.xsbox input{border:none;background:none;outline:none;font-size:13px;font-family:inherit;width:100%}
+.xsbox i{color:var(--m);font-size:12px;flex-shrink:0}
+
+/* ORDER DETAIL */
+.xoil{background:#fafafa;border-radius:8px;padding:12px;margin:12px 0}
+.xoir{display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid #eee}
+.xoir:last-child{border-bottom:none;font-weight:700}
+
+/* GIFT SECTION IN ADMIN */
+.xgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.xgcard{background:#fff;border-radius:10px;overflow:hidden;border:1px solid #f0e0f8;position:relative}
+.xgcard img{width:100%;height:120px;object-fit:cover}
+.xgcinfo{padding:10px}
+.xgcinfo h4{font-size:12px;font-weight:700;margin-bottom:4px;color:#333}
+.xgcinfo p{font-size:12px;color:var(--pur);font-weight:700}
+.xgcdel{position:absolute;top:6px;right:6px;background:rgba(255,255,255,.9);border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;color:var(--r);font-size:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.xgcat{position:absolute;top:6px;left:6px;background:var(--pur);color:#fff;font-size:10px;padding:2px 8px;border-radius:50px;font-weight:700}
+
+/* RESPONSIVE */
+@media(max-width:1024px){
+  .xsg{grid-template-columns:repeat(2,1fr)}
+  .xstg{grid-template-columns:1fr}
+  .xfr{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .xsb{transform:translateX(-100%)}
+  .xsb.open{transform:translateX(0)}
+  .xmc{margin-left:0}
+  .xhb{display:flex}
+  .xsg{grid-template-columns:1fr 1fr}
+  .xqa{grid-template-columns:1fr 1fr}
+  .xpg{padding:14px}
+  .xtb{padding:0 16px 0 60px}
+  .xlc{padding:30px 24px}
+  .xmb{padding:18px}
+  .xstg{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .xsg{grid-template-columns:1fr 1fr}
+  .xqa{grid-template-columns:repeat(2,1fr)}
+  .xcdh{flex-direction:column;align-items:flex-start}
+  .xlc{padding:24px 18px}
+}
+</style>
+</head>
+<body>
+
+<!-- ======= LOGIN PAGE ======= -->
+<div id="xLP">
+  <div class="xlc">
+    <div class="xll">
+      <h1>techNet<span>.</span></h1>
+      <p>DIGITAL COMPUTER — SYLHET</p>
+    </div>
+    <div style="text-align:center;margin-bottom:20px">
+      <span class="xlb">🔐 এডমিন প্যানেল</span>
+    </div>
+    <div class="xlf">
+      <label>ইমেইল</label>
+      <input type="email" id="xAdE" placeholder="admin@example.com" autocomplete="email">
+    </div>
+    <div class="xlf">
+      <label>পাসওয়ার্ড</label>
+      <input type="password" id="xAdP" placeholder="••••••••" autocomplete="current-password" onkeypress="if(event.key==='Enter')xDoLogin()">
+    </div>
+    <button class="xlbtn" onclick="xDoLogin()"><i class="fa fa-lock"></i> লগইন করুন</button>
+    <div class="xle" id="xLE"></div>
+    <p style="text-align:center;font-size:11px;color:#aaa;margin-top:16px">🔒 শুধুমাত্র অনুমোদিত এডমিনদের জন্য</p>
+  </div>
+</div>
+
+<!-- ======= ADMIN PAGE ======= -->
+<div id="xAP">
+  <!-- Mobile hamburger -->
+  <button class="xhb" id="xHB" onclick="xToggleSidebar()"><i class="fa fa-bars"></i></button>
+  <div class="xsb-overlay" id="xSBO" onclick="xCloseSidebar()"></div>
+
+  <div class="xaw">
+    <!-- SIDEBAR -->
+    <aside class="xsb" id="xSB">
+      <div class="xsbl">
+        <h2>techNet<span>.</span></h2>
+        <small>ADMIN PANEL</small>
+        <span class="xrb" id="xRB">সুপার এডমিন</span>
+      </div>
+      <div class="xsu">
+        <span id="xSUN">লোড হচ্ছে...</span>
+        <span id="xSUE" style="font-size:11px;opacity:.7"></span>
+      </div>
+      <nav class="xsn">
+        <div class="xns">প্রধান</div>
+        <div class="xni active" onclick="xShowTab('dashboard',this)"><i class="fa fa-th-large"></i><span>ড্যাশবোর্ড</span></div>
+        <div class="xni" onclick="xShowTab('orders',this)" id="xNO"><i class="fa fa-shopping-bag"></i><span>অর্ডার সমূহ</span><span class="xbc" id="xPB" style="display:none">0</span></div>
+        <div class="xni" onclick="xShowTab('products',this)"><i class="fa fa-box"></i><span>পণ্য ব্যবস্থাপনা</span></div>
+        <div class="xns">গিফট & কাস্টমার</div>
+        <div class="xni" onclick="xShowTab('gifts',this)"><i class="fa fa-gift"></i><span>গিফট ব্যবস্থাপনা</span></div>
+        <div class="xni" onclick="xShowTab('users',this)"><i class="fa fa-users"></i><span>ইউজার লিস্ট</span></div>
+        <div class="xns" id="xSupSec">সুপার এডমিন</div>
+        <div class="xni" id="xNAd" onclick="xShowTab('admins',this)" style="display:none"><i class="fa fa-user-shield"></i><span>এডমিন ব্যবস্থাপনা</span></div>
+        <div class="xni" id="xNSt" onclick="xShowTab('settings',this)" style="display:none"><i class="fa fa-cog"></i><span>সাইট সেটিংস</span></div>
+        <div class="xns">অ্যাকাউন্ট</div>
+        <div class="xni" onclick="xDoLogout()"><i class="fa fa-sign-out-alt"></i><span>লগআউট</span></div>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <div class="xmc">
+      <!-- TOPBAR -->
+      <div class="xtb">
+        <div class="xtbl">
+          <h3 id="xTBT">ড্যাশবোর্ড</h3>
+          <p id="xTBS">techNet এডমিন প্যানেল</p>
+        </div>
+        <div class="xtbr">
+          <div class="xtic" onclick="xLoadDash()" title="রিফ্রেশ"><i class="fa fa-sync-alt"></i></div>
+          <a href="technet_updated.html" target="_blank" class="xtic" title="মেইন সাইট"><i class="fa fa-external-link-alt"></i></a>
+          <div class="xav" id="xTAV">A</div>
+          <button class="xlo" onclick="xDoLogout()"><i class="fa fa-sign-out-alt"></i> লগআউট</button>
+        </div>
+      </div>
+
+      <!-- ========== DASHBOARD ========== -->
+      <div class="xpg active" id="xpg-dashboard">
+        <div class="xsg">
+          <div class="xsc">
+            <div class="xsi" style="background:linear-gradient(135deg,#e53935,#c62828)"><i class="fa fa-shopping-bag"></i></div>
+            <div class="xsif"><p>মোট অর্ডার</p><h3 id="xStO">0</h3><small>সব অর্ডার</small></div>
+          </div>
+          <div class="xsc">
+            <div class="xsi" style="background:linear-gradient(135deg,#4CAF50,#388E3C)"><i class="fa fa-bangladeshi-taka-sign"></i></div>
+            <div class="xsif"><p>মোট আয়</p><h3 id="xStR">৳০</h3><small>সব অর্ডার</small></div>
+          </div>
+          <div class="xsc">
+            <div class="xsi" style="background:linear-gradient(135deg,#1976D2,#1565C0)"><i class="fa fa-box"></i></div>
+            <div class="xsif"><p>মোট পণ্য</p><h3 id="xStP">0</h3><small>এ্যাকটিভ পণ্য</small></div>
+          </div>
+          <div class="xsc">
+            <div class="xsi" style="background:linear-gradient(135deg,#FF9800,#F57C00)"><i class="fa fa-users"></i></div>
+            <div class="xsif"><p>মোট কাস্টমার</p><h3 id="xStU">0</h3><small>রেজিস্টার্ড</small></div>
+          </div>
+        </div>
+
+        <div class="xqa">
+          <div class="xqac" onclick="xOpenAddProd()"><i class="fa fa-plus-circle"></i><span>নতুন পণ্য</span></div>
+          <div class="xqac" onclick="xShowTab('orders')"><i class="fa fa-shopping-bag"></i><span>অর্ডার দেখুন</span></div>
+          <div class="xqac" onclick="xShowTab('gifts')"><i class="fa fa-gift"></i><span>গিফট পণ্য</span></div>
+          <div class="xqac" onclick="xShowTab('users')"><i class="fa fa-users"></i><span>কাস্টমার লিস্ট</span></div>
+        </div>
+
+        <div class="xcd">
+          <div class="xcdh">
+            <div class="xcdt"><i class="fa fa-clock"></i> সাম্প্রতিক অর্ডার</div>
+            <button class="xbt xbo xbs" onclick="xShowTab('orders')">সব দেখুন →</button>
+          </div>
+          <div class="xtw">
+            <table><thead><tr><th>অর্ডার নং</th><th>কাস্টমার</th><th>পণ্য</th><th>মোট</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
+            <tbody id="xROB"><tr><td colspan="6" style="text-align:center;padding:24px;color:#aaa">লোড হচ্ছে...</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ORDERS ========== -->
+      <div class="xpg" id="xpg-orders">
+        <div class="xcd">
+          <div class="xcdh">
+            <div class="xcdt"><i class="fa fa-shopping-bag"></i> সকল অর্ডার</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="xOF" onchange="xFilterOrders()" style="padding:7px 10px;border:1.5px solid var(--b);border-radius:6px;font-size:12px;font-family:inherit;outline:none">
+                <option value="">সব স্ট্যাটাস</option>
+                <option value="pending">পেন্ডিং</option>
+                <option value="processing">প্রসেসিং</option>
+                <option value="shipped">শিপড</option>
+                <option value="delivered">ডেলিভারড</option>
+                <option value="cancelled">বাতিল</option>
+              </select>
+              <div class="xsbox"><i class="fa fa-search"></i><input type="text" id="xOS" placeholder="অর্ডার/নাম খুঁজুন..." oninput="xFilterOrders()"></div>
+            </div>
+          </div>
+          <div class="xtw">
+            <table><thead><tr><th>অর্ডার নং</th><th>তারিখ</th><th>কাস্টমার</th><th>ফোন</th><th>মোট</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th></tr></thead>
+            <tbody id="xOB"><tr><td colspan="7" style="text-align:center;padding:24px;color:#aaa">লোড হচ্ছে...</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== PRODUCTS ========== -->
+      <div class="xpg" id="xpg-products">
+        <div class="xcd">
+          <div class="xcdh">
+            <div class="xcdt"><i class="fa fa-box"></i> পণ্য ব্যবস্থাপনা</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <div class="xsbox"><i class="fa fa-search"></i><input type="text" id="xPS" placeholder="পণ্য খুঁজুন..." oninput="xFilterProd()"></div>
+              <button class="xbt xbr" onclick="xOpenAddProd()"><i class="fa fa-plus"></i> নতুন পণ্য</button>
+            </div>
+          </div>
+          <div class="xtw">
+            <table><thead><tr><th>ছবি</th><th>পণ্যের নাম</th><th>ক্যাটাগরি</th><th>মূল্য</th><th>পুরনো মূল্য</th><th>ফ্ল্যাশ</th><th>নতুন</th><th>অ্যাকশন</th></tr></thead>
+            <tbody id="xPrB"><tr><td colspan="8" style="text-align:center;padding:24px;color:#aaa">লোড হচ্ছে...</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== GIFTS ========== -->
+      <div class="xpg" id="xpg-gifts">
+        <div class="xcd">
+          <div class="xcdh">
+            <div class="xcdt"><i class="fa fa-gift" style="color:var(--pur)"></i> গিফট পণ্য ব্যবস্থাপনা</div>
+            <button class="xbt xbp" onclick="xOpenAddGift()"><i class="fa fa-plus"></i> নতুন গিফট</button>
+          </div>
+          <div style="background:#f3e5f5;border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:#6a1b9a">
+            <i class="fa fa-info-circle"></i> গিফট ছবি Firestore + Firebase Storage তে আপলোড হয়। মেইন সাইটে স্বয়ংক্রিয় দেখাবে।
+          </div>
+          <!-- Gift filter tabs -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+            <button class="xbt xbp" onclick="xLoadGifts('all',this)" id="xGTAll">🎁 সব</button>
+            <button class="xbt xbo" onclick="xLoadGifts('mug',this)" id="xGTMug">☕ মগ</button>
+            <button class="xbt xbo" onclick="xLoadGifts('crest',this)" id="xGTCr">🏆 ক্রেস্ট</button>
+            <button class="xbt xbo" onclick="xLoadGifts('frame',this)" id="xGTFr">🖼 ফ্রেম</button>
+            <button class="xbt xbo" onclick="xLoadGifts('other',this)" id="xGTOt">✨ অন্যান্য</button>
+          </div>
+          <div class="xgrid" id="xGGrid">
+            <div style="grid-column:1/-1;text-align:center;padding:30px;color:#aaa">লোড হচ্ছে...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== USERS ========== -->
+      <div class="xpg" id="xpg-users">
+        <div class="xcd">
+          <div class="xcdh">
+            <div class="xcdt"><i class="fa fa-users"></i> কাস্টমার লিস্ট</div>
+            <div class="xsbox"><i class="fa fa-search"></i><input type="text" id="xUS" placeholder="নাম/ফোন খুঁজুন..." oninput="xFilterUsers()"></div>
+          </div>
+          <div class="xtw">
+            <table><thead><tr><th>নাম</th><th>ইমেইল</th><th>ফোন</th><th>যোগ দিয়েছেন</th></tr></thead>
+            <tbody id="xUB"><tr><td colspan="4" style="text-align:center;padding:24px;color:#aaa">লোড হচ্ছে...</td></tr></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== ADMINS ========== -->
+      <div class="xpg" id="xpg-admins">
+        <div class="xcd">
+          <div class="xcdh">
+            <div class="xcdt"><i class="fa fa-user-shield"></i> এডমিন ব্যবস্থাপনা</div>
+            <button class="xbt xbr" onclick="xOpenAddAdmin()"><i class="fa fa-user-plus"></i> জুনিয়র এডমিন যোগ</button>
+          </div>
+          <div style="background:#fff3e0;border:1px solid #FFE0B2;border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:#E65100">
+            <i class="fa fa-info-circle"></i> শুধুমাত্র সুপার এডমিন নতুন জুনিয়র এডমিন যোগ করতে পারবেন।
+          </div>
+          <div id="xAL"><div class="xeas"><i class="fa fa-user-shield"></i><p>লোড হচ্ছে...</p></div></div>
+        </div>
+      </div>
+
+      <!-- ========== SETTINGS ========== -->
+      <div class="xpg" id="xpg-settings">
+        <div class="xcd">
+          <div class="xcdh">
+            <div class="xcdt"><i class="fa fa-cog"></i> সাইট সেটিংস</div>
+            <button class="xbt xbr" onclick="xSaveSettings()"><i class="fa fa-save"></i> সেভ করুন</button>
+          </div>
+          <div class="xstg">
+            <div>
+              <h4 style="font-size:13px;font-weight:700;color:#555;margin-bottom:10px;border-left:3px solid var(--r);padding-left:8px">যোগাযোগ তথ্য</h4>
+              <div class="xfg"><label>ফোন নম্বর</label><input type="text" id="xSPh" placeholder="01XXXXXXXXX"></div>
+              <div class="xfg"><label>ইমেইল</label><input type="email" id="xSEm" placeholder="info@technet.com"></div>
+              <div class="xfg"><label>ঠিকানা</label><input type="text" id="xSAd" placeholder="সিলেট, বাংলাদেশ"></div>
+              <div class="xfg"><label>অফিস সময়</label><input type="text" id="xSHr" placeholder="সকাল ৯টা - রাত ৯টা"></div>
+            </div>
+            <div>
+              <h4 style="font-size:13px;font-weight:700;color:#555;margin-bottom:10px;border-left:3px solid var(--r);padding-left:8px">সোশ্যাল মিডিয়া</h4>
+              <div class="xfg"><label><i class="fab fa-facebook" style="color:#1877F2"></i> Facebook URL</label><input type="text" id="xSFb" placeholder="https://facebook.com/..."></div>
+              <div class="xfg"><label><i class="fab fa-youtube" style="color:#FF0000"></i> YouTube URL</label><input type="text" id="xSYt" placeholder="https://youtube.com/..."></div>
+              <div class="xfg"><label><i class="fab fa-whatsapp" style="color:#25D366"></i> WhatsApp নম্বর</label><input type="text" id="xSWa" placeholder="8801XXXXXXXXX"></div>
+              <div class="xfg"><label><i class="fab fa-instagram" style="color:#E1306C"></i> Instagram URL</label><input type="text" id="xSIg" placeholder="https://instagram.com/..."></div>
+            </div>
+            <div>
+              <h4 style="font-size:13px;font-weight:700;color:#555;margin-bottom:10px;border-left:3px solid var(--r);padding-left:8px">পেমেন্ট তথ্য</h4>
+              <div class="xfg"><label>পেমেন্ট পদ্ধতি</label><input type="text" id="xSPM" placeholder="বিকাশ/নগদ/রকেট"></div>
+              <div class="xfg"><label>পেমেন্ট নম্বর</label><input type="text" id="xSPN" placeholder="01XXXXXXXXX"></div>
+              <div class="xfg"><label>নির্দেশনা</label><textarea id="xSPI" placeholder="Send Money করুন এবং Transaction ID দিন"></textarea></div>
+            </div>
+            <div>
+              <h4 style="font-size:13px;font-weight:700;color:#555;margin-bottom:10px;border-left:3px solid var(--r);padding-left:8px">সাইট তথ্য</h4>
+              <div class="xfg"><label>টপ বার মেসেজ</label><input type="text" id="xSTB" placeholder="🚀 ফ্রি ডেলিভারি ৳২০০০+ অর্ডারে"></div>
+              <div class="xfg"><label>ফুটার সম্পর্কে</label><textarea id="xSAbt" placeholder="সিলেটের সেরা কম্পিউটার শপ।"></textarea></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end main-content -->
+  </div>
+</div>
+
+<!-- ======= MODALS ======= -->
+
+<!-- Order Detail -->
+<div class="xmo" id="xODM">
+  <div class="xmb xmbw">
+    <button class="xmc2" onclick="xCloseModal('xODM')">✕</button>
+    <div class="xmt">অর্ডার বিবরণ</div>
+    <div class="xms" id="xODI"></div>
+    <div id="xODC"></div>
+  </div>
+</div>
+
+<!-- Add/Edit Product -->
+<div class="xmo" id="xPM">
+  <div class="xmb xmbw">
+    <button class="xmc2" onclick="xCloseModal('xPM')">✕</button>
+    <div class="xmt" id="xPMT">নতুন পণ্য যোগ করুন</div>
+    <div class="xms">পণ্যের সম্পূর্ণ তথ্য দিন</div>
+    <input type="hidden" id="xEPI">
+    <div class="xfr">
+      <div class="xfg"><label>পণ্যের নাম *</label><input type="text" id="xPN" placeholder="পণ্যের নাম লিখুন"></div>
+      <div class="xfg"><label>ক্যাটাগরি *</label>
+        <select id="xPCt">
+          <option value="">ক্যাটাগরি বেছে নিন</option>
+          <option>ল্যাপটপ</option><option>ডেস্কটপ</option><option>মোবাইল</option>
+          <option>হেডফোন</option><option>কীবোর্ড</option><option>মাউস</option>
+          <option>মনিটর</option><option>গেমিং</option><option>স্টোরেজ</option><option>প্রিন্টার</option>
+        </select>
+      </div>
+    </div>
+    <div class="xfr">
+      <div class="xfg"><label>মূল্য (৳) *</label><input type="number" id="xPPr" placeholder="0"></div>
+      <div class="xfg"><label>পুরনো মূল্য (৳)</label><input type="number" id="xPOP" placeholder="0 (ছাড় থাকলে)"></div>
+    </div>
+    <div class="xfr">
+      <div class="xfg"><label>ইমোজি / আইকন</label><input type="text" id="xPEm" placeholder="💻"></div>
+      <div class="xfg"><label>স্টক পরিমাণ</label><input type="number" id="xPSt" placeholder="100"></div>
+    </div>
+    <div class="xfg">
+      <label>পণ্যের ছবি (Firebase Storage)</label>
+      <div class="xua" onclick="document.getElementById('xPIF').click()">
+        <i class="fa fa-cloud-upload-alt"></i>
+        <p>ছবি আপলোড করতে ক্লিক করুন</p>
+        <small>JPG, PNG, WEBP — সর্বোচ্চ ৫MB</small>
+      </div>
+      <input type="file" id="xPIF" accept="image/*" style="display:none" onchange="xHandleImgUpload(this,'product')">
+      <div class="xupr" id="xPUPR"><div class="xuprb" id="xPUPRB"></div></div>
+      <img class="xupv" id="xPPV" alt="Preview">
+      <div class="xpub" id="xPPUB">
+        📎 ছবির লিঙ্ক: <a id="xPPUBL" href="#" target="_blank">লোড হচ্ছে...</a>
+        <button onclick="xCopyUrl('xPPUBL')" style="margin-left:6px;background:var(--r);color:#fff;border:none;padding:2px 8px;border-radius:4px;font-size:11px;cursor:pointer">কপি</button>
+      </div>
+      <input type="hidden" id="xPIU">
+    </div>
+    <div class="xfg"><label>বিবরণ</label><textarea id="xPDs" placeholder="পণ্যের বিবরণ..."></textarea></div>
+    <div class="xfg"><label>স্পেসিফিকেশন</label><textarea id="xPSp" placeholder="RAM: 8GB&#10;Storage: 512GB SSD"></textarea></div>
+    <div style="display:flex;gap:16px;margin-bottom:14px">
+      <label class="xfc"><input type="checkbox" id="xPFl"> ফ্ল্যাশ সেল</label>
+      <label class="xfc"><input type="checkbox" id="xPNw"> নতুন আরাইভাল</label>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="xbt xbr" style="flex:1" onclick="xSaveProd()"><i class="fa fa-save"></i> সেভ করুন</button>
+      <button class="xbt xbo" onclick="xCloseModal('xPM')">বাতিল</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Gift Modal -->
+<div class="xmo" id="xGM">
+  <div class="xmb">
+    <button class="xmc2" onclick="xCloseModal('xGM')">✕</button>
+    <div class="xmt">নতুন গিফট পণ্য যোগ</div>
+    <div class="xms">গিফট পণ্যের তথ্য ও ছবি দিন — Firestore এ সেভ হবে</div>
+    <input type="hidden" id="xGEI">
+    <div class="xfg"><label>পণ্যের নাম *</label><input type="text" id="xGN" placeholder="যেমন: কাস্টম হার্ট মগ"></div>
+    <div class="xfg"><label>ক্যাটাগরি *</label>
+      <select id="xGCat">
+        <option value="mug">☕ মগ</option>
+        <option value="crest">🏆 ক্রেস্ট</option>
+        <option value="frame">🖼 ফ্রেম</option>
+        <option value="other">✨ অন্যান্য</option>
+      </select>
+    </div>
+    <div class="xfg"><label>মূল্য (৳)</label><input type="number" id="xGPr" placeholder="যেমন: 350"></div>
+    <div class="xfg">
+      <label>ছবি আপলোড * (Firebase Storage → Firestore)</label>
+      <div class="xua" onclick="document.getElementById('xGIF').click()">
+        <i class="fa fa-image"></i>
+        <p>গিফটের ছবি আপলোড করুন</p>
+        <small>JPG, PNG, WEBP — সর্বোচ্চ ৫MB</small>
+      </div>
+      <input type="file" id="xGIF" accept="image/*" style="display:none" onchange="xHandleImgUpload(this,'gift')">
+      <div class="xupr" id="xGUPR"><div class="xuprb" id="xGUPRB"></div></div>
+      <img class="xupv" id="xGPV" alt="Preview">
+      <div class="xpub" id="xGPUB">
+        📎 ছবির লিঙ্ক: <a id="xGPUBL" href="#" target="_blank">লোড হচ্ছে...</a>
+      </div>
+      <input type="hidden" id="xGIU">
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="xbt xbp" style="flex:1" onclick="xSaveGift()"><i class="fa fa-save"></i> Firestore এ সেভ করুন</button>
+      <button class="xbt xbo" onclick="xCloseModal('xGM')">বাতিল</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Junior Admin Modal -->
+<div class="xmo" id="xAAM">
+  <div class="xmb">
+    <button class="xmc2" onclick="xCloseModal('xAAM')">✕</button>
+    <div class="xmt">জুনিয়র এডমিন যোগ করুন</div>
+    <div class="xms">ইউজারের ফোন নম্বর দিয়ে তাকে এডমিন করুন</div>
+    <div style="background:#e3f2fd;border:1px solid #BBDEFB;border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px;color:#1565C0">
+      <i class="fa fa-info-circle"></i> জুনিয়র এডমিন পণ্য যোগ, অর্ডার আপডেট করতে পারবেন। সাইট সেটিংস পরিবর্তন করতে পারবেন না।
+    </div>
+    <div class="xfg"><label>ফোন নম্বর</label><input type="text" id="xNAP" placeholder="01XXXXXXXXX"></div>
+    <div class="xfg"><label>নাম (ঐচ্ছিক)</label><input type="text" id="xNAN" placeholder="এডমিনের নাম"></div>
+    <div style="display:flex;gap:10px">
+      <button class="xbt xbr" style="flex:1" onclick="xAddJrAdmin()"><i class="fa fa-user-plus"></i> এডমিন করুন</button>
+      <button class="xbt xbo" onclick="xCloseModal('xAAM')">বাতিল</button>
+    </div>
+  </div>
+</div>
+
+<div class="xtst" id="xToast"></div>
+
+<script>
+// ============================================================
+// 🔥 FIREBASE CONFIG
+// ============================================================
+const xFC = {
+  apiKey: "AIzaSyCfr0fJ_XNCdSm4Lq8fFuQlJeute8Dw2Jw",
+  authDomain: "technet-digital-computer.firebaseapp.com",
+  databaseURL: "https://technet-digital-computer-default-rtdb.firebaseio.com",
+  projectId: "technet-digital-computer",
+  storageBucket: "technet-digital-computer.firebasestorage.app",
+  messagingSenderId: "676742579629",
+  appId: "1:676742579629:web:634eba366d3fb3bc4a8d24",
+  measurementId: "G-LXGFLESV14"
+};
+
+// SUPER ADMIN
+const xSAE = 'saimahmedsaim2020@gmail.com';
+
+let xDb, xAuth, xStorage, xFs, xFOK = false;
+let xCU = null, xISA = false;
+let xOrds = [], xProds = [], xUsers = [], xAdmins = [];
+let xCPU = '', xCGU = '';
+
+try {
+  firebase.initializeApp(xFC);
+  xDb = firebase.database();
+  xAuth = firebase.auth();
+  xStorage = firebase.storage();
+  xFs = firebase.firestore();
+  xFOK = true;
+} catch(e) {
+  document.getElementById('xLE').textContent = '⚙️ Firebase সংযোগে সমস্যা: ' + e.message;
+  document.getElementById('xLE').style.display = 'block';
+}
+
+// ============================================================
+// AUTH STATE
+// ============================================================
+if (xFOK) {
+  xAuth.onAuthStateChanged(async (user) => {
+    if (!user) { xShowLogin(); return; }
+    const snap = await xDb.ref(`admins/${user.uid}`).once('value');
+    const isSA = user.email === xSAE;
+    const isJr = snap.exists() && snap.val().role === 'junior';
+    if (!isSA && !isJr) {
+      xShowToast('❌ আপনি এডমিন নন। অ্যাক্সেস নিষিদ্ধ।', 'error');
+      xAuth.signOut(); xShowLogin(); return;
+    }
+    xCU = user; xISA = isSA;
+    if (isSA) {
+      xDb.ref(`admins/${user.uid}`).set({
+        name: user.displayName || 'Super Admin',
+        email: user.email, phone: '', role: 'super', addedAt: Date.now()
+      });
+    }
+    xShowAdmin(); xSetupUI(); xLoadRTListeners();
+  });
+}
+
+function xShowLogin() {
+  document.getElementById('xLP').style.display = 'flex';
+  document.getElementById('xAP').style.display = 'none';
+}
+function xShowAdmin() {
+  document.getElementById('xLP').style.display = 'none';
+  document.getElementById('xAP').style.display = 'block';
+}
+
+// ============================================================
+// LOGIN / LOGOUT
+// ============================================================
+function xDoLogin() {
+  if (!xFOK) { xShowErr('Firebase কনফিগার সমস্যা'); return; }
+  const e = document.getElementById('xAdE').value.trim();
+  const p = document.getElementById('xAdP').value;
+  if (!e || !p) { xShowErr('ইমেইল ও পাসওয়ার্ড দিন'); return; }
+  document.querySelector('.xlbtn').disabled = true;
+  document.querySelector('.xlbtn').textContent = 'লোড হচ্ছে...';
+  xAuth.signInWithEmailAndPassword(e, p)
+    .then(() => xHideErr())
+    .catch(err => {
+      const m = {'auth/wrong-password':'ভুল পাসওয়ার্ড','auth/user-not-found':'অ্যাকাউন্ট পাওয়া যায়নি','auth/invalid-email':'ভুল ইমেইল ফরম্যাট','auth/too-many-requests':'বারবার ভুলের কারণে সাময়িক বন্ধ','auth/invalid-credential':'ভুল ইমেইল বা পাসওয়ার্ড'};
+      xShowErr(m[err.code] || 'লগইন ব্যর্থ: ' + err.message);
+    }).finally(() => {
+      document.querySelector('.xlbtn').disabled = false;
+      document.querySelector('.xlbtn').innerHTML = '<i class="fa fa-lock"></i> লগইন করুন';
+    });
+}
+function xShowErr(msg) { const e=document.getElementById('xLE'); e.textContent='❌ '+msg; e.style.display='block'; }
+function xHideErr() { document.getElementById('xLE').style.display='none'; }
+function xDoLogout() { if(confirm('লগআউট করবেন?')) xAuth.signOut(); }
+
+// ============================================================
+// SETUP UI
+// ============================================================
+function xSetupUI() {
+  const n = xCU.displayName || xCU.email.split('@')[0];
+  document.getElementById('xSUN').textContent = n;
+  document.getElementById('xSUE').textContent = xCU.email;
+  document.getElementById('xTAV').textContent = n[0].toUpperCase();
+  if (xISA) {
+    document.getElementById('xRB').textContent = '👑 সুপার এডমিন';
+    document.getElementById('xRB').style.background = '#E65100';
+    document.getElementById('xNAd').style.display = '';
+    document.getElementById('xNSt').style.display = '';
+    document.getElementById('xSupSec').style.display = '';
+  } else {
+    document.getElementById('xRB').textContent = '🔰 জুনিয়র এডমিন';
+    document.getElementById('xRB').style.background = '#1565C0';
+    document.getElementById('xSupSec').style.display = 'none';
+    // Remove settings from quick actions
+    document.querySelectorAll('.xqac').forEach(c => {
+      if(c.textContent.includes('সাইট')) c.style.display='none';
+    });
+  }
+}
+
+// ============================================================
+// SIDEBAR MOBILE
+// ============================================================
+function xToggleSidebar() {
+  document.getElementById('xSB').classList.toggle('open');
+  document.getElementById('xSBO').classList.toggle('open');
+}
+function xCloseSidebar() {
+  document.getElementById('xSB').classList.remove('open');
+  document.getElementById('xSBO').classList.remove('open');
+}
+
+// ============================================================
+// REALTIME LISTENERS
+// ============================================================
+function xLoadRTListeners() {
+  xDb.ref('orders').on('value', snap => {
+    xOrds = [];
+    snap.forEach(c => xOrds.push({ id: c.key, ...c.val() }));
+    xOrds.sort((a,b) => b.createdAt - a.createdAt);
+    xUpdOrdBadge(); xRenderOrds(xOrds); xRenderRecentOrds(); xUpdStats();
+  });
+  xDb.ref('products').on('value', snap => {
+    xProds = [];
+    snap.forEach(c => xProds.push({ id: c.key, ...c.val() }));
+    xRenderProds(xProds); xUpdStats();
+  });
+  xDb.ref('users').on('value', snap => {
+    xUsers = [];
+    snap.forEach(c => xUsers.push({ id: c.key, ...c.val() }));
+    xRenderUsers(xUsers); xUpdStats();
+  });
+  xDb.ref('admins').on('value', snap => {
+    xAdmins = [];
+    snap.forEach(c => xAdmins.push({ id: c.key, ...c.val() }));
+    xRenderAdmins();
+  });
+  xDb.ref('settings').once('value', snap => {
+    if (!snap.exists()) return;
+    const s = snap.val();
+    document.getElementById('xSPh').value = s.footerPhone || '';
+    document.getElementById('xSEm').value = s.footerEmail || '';
+    document.getElementById('xSAd').value = s.footerAddress || '';
+    document.getElementById('xSHr').value = s.footerHours || '';
+    document.getElementById('xSFb').value = s.facebook || '';
+    document.getElementById('xSYt').value = s.youtube || '';
+    document.getElementById('xSWa').value = s.whatsapp || '';
+    document.getElementById('xSIg').value = s.instagram || '';
+    document.getElementById('xSTB').value = s.topBar || '';
+    document.getElementById('xSAbt').value = s.footerAbout || '';
+    if (s.payment) {
+      document.getElementById('xSPM').value = s.payment.method || '';
+      document.getElementById('xSPN').value = s.payment.number || '';
+      document.getElementById('xSPI').value = s.payment.instruction || '';
+    }
+  });
+  // Load gifts
+  xLoadGifts('all');
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function xLoadDash() { xShowToast('✅ রিফ্রেশ হচ্ছে...'); }
+function xUpdStats() {
+  document.getElementById('xStO').textContent = xOrds.length;
+  const rev = xOrds.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+(o.total||0),0);
+  document.getElementById('xStR').textContent = '৳' + rev.toLocaleString('bn-BD');
+  document.getElementById('xStP').textContent = xProds.length;
+  document.getElementById('xStU').textContent = xUsers.length;
+}
+function xUpdOrdBadge() {
+  const p = xOrds.filter(o=>o.status==='pending').length;
+  const b = document.getElementById('xPB');
+  if (p>0) { b.textContent=p; b.style.display=''; } else b.style.display='none';
+}
+function xRenderRecentOrds() {
+  const tb = document.getElementById('xROB');
+  const r = xOrds.slice(0,5);
+  if (!r.length) { tb.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:24px;color:#aaa"><i class="fa fa-box-open"></i> কোনো অর্ডার নেই</td></tr>`; return; }
+  tb.innerHTML = r.map(o=>`
+    <tr>
+      <td><span style="font-family:monospace;font-size:11px">${o.orderId||o.id}</span></td>
+      <td>${o.name||'-'}</td>
+      <td><span style="font-size:12px;color:#777">${(o.items||[]).length} টি পণ্য</span></td>
+      <td style="font-weight:700;color:var(--r)">৳${(o.total||0).toLocaleString()}</td>
+      <td>${xStBadge(o.status)}</td>
+      <td><button class="xbt xbo xbs" onclick="xOpenOrdDet('${o.id||o.orderId}')"><i class="fa fa-eye"></i></button></td>
+    </tr>`).join('');
+}
+
+// ============================================================
+// ORDERS
+// ============================================================
+function xRenderOrds(ords) {
+  const tb = document.getElementById('xOB');
+  if (!ords.length) { tb.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:30px;color:#aaa"><i class="fa fa-box-open" style="font-size:28px;display:block;margin-bottom:10px"></i>কোনো অর্ডার নেই</td></tr>`; return; }
+  tb.innerHTML = ords.map(o=>`
+    <tr>
+      <td><span style="font-family:monospace;font-size:11px;font-weight:700">${o.orderId||o.id}</span></td>
+      <td style="font-size:12px;color:#777">${o.createdAt?new Date(o.createdAt).toLocaleDateString('bn-BD'):'-'}</td>
+      <td>${o.name||'-'}</td>
+      <td>${o.phone||'-'}</td>
+      <td style="font-weight:700;color:var(--r)">৳${(o.total||0).toLocaleString()}</td>
+      <td>${xStBadge(o.status)}</td>
+      <td><button class="xbt xbo xbs" onclick="xOpenOrdDet('${o.id||o.orderId}')"><i class="fa fa-eye"></i> দেখুন</button></td>
+    </tr>`).join('');
+}
+function xFilterOrders() {
+  const s = document.getElementById('xOF').value;
+  const q = document.getElementById('xOS').value.trim().toLowerCase();
+  let f = xOrds;
+  if (s) f = f.filter(o=>o.status===s);
+  if (q) f = f.filter(o=>(o.name||'').toLowerCase().includes(q)||(o.orderId||'').toLowerCase().includes(q)||(o.phone||'').includes(q));
+  xRenderOrds(f);
+}
+function xOpenOrdDet(id) {
+  const o = xOrds.find(x=>(x.id||x.orderId)===id);
+  if (!o) return;
+  document.getElementById('xODI').textContent = 'অর্ডার নং: ' + (o.orderId||o.id);
+  document.getElementById('xODC').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div style="background:#fafafa;padding:12px;border-radius:8px;font-size:13px">
+        <b>👤 কাস্টমার তথ্য</b><hr style="margin:6px 0;border:none;border-top:1px solid #eee">
+        <p><b>নাম:</b> ${o.name||'-'}</p>
+        <p><b>ফোন:</b> ${o.phone||'-'}</p>
+        <p><b>ঠিকানা:</b> ${o.addr||'-'}</p>
+        ${o.note?`<p><b>নোট:</b> ${o.note}</p>`:''}
+        <p><b>তারিখ:</b> ${o.createdAt?new Date(o.createdAt).toLocaleString('bn-BD'):'-'}</p>
+      </div>
+      <div style="background:#fafafa;padding:12px;border-radius:8px;font-size:13px">
+        <b>📦 স্ট্যাটাস আপডেট</b><hr style="margin:6px 0;border:none;border-top:1px solid #eee">
+        <div class="xfg"><label>স্ট্যাটাস পরিবর্তন</label>
+          <select id="xNS" style="width:100%;padding:8px;border:1.5px solid var(--b);border-radius:6px;font-size:13px;font-family:inherit;outline:none">
+            <option value="pending" ${o.status==='pending'?'selected':''}>⏳ পেন্ডিং</option>
+            <option value="processing" ${o.status==='processing'?'selected':''}>⚙️ প্রসেসিং</option>
+            <option value="shipped" ${o.status==='shipped'?'selected':''}>🚚 শিপড</option>
+            <option value="delivered" ${o.status==='delivered'?'selected':''}>✅ ডেলিভারড</option>
+            <option value="cancelled" ${o.status==='cancelled'?'selected':''}>❌ বাতিল</option>
+          </select>
+        </div>
+        <button class="xbt xbr" onclick="xUpdOrdSt('${o.id||o.orderId}')"><i class="fa fa-check"></i> স্ট্যাটাস আপডেট</button>
+      </div>
+    </div>
+    <div class="xoil">
+      <b style="font-size:13px">🛒 অর্ডার আইটেম</b>
+      <hr style="margin:6px 0;border:none;border-top:1px solid #eee">
+      ${(o.items||[]).map(i=>`
+        <div class="xoir">
+          <span>${i.emoji||'📦'} ${i.name}</span>
+          <span>×${i.qty||1} = ৳${((i.price||0)*(i.qty||1)).toLocaleString()}</span>
+        </div>`).join('')}
+      <div class="xoir"><span>মোট</span><span style="color:var(--r)">৳${(o.total||0).toLocaleString()}</span></div>
+    </div>`;
+  xOpenModal('xODM');
+}
+function xUpdOrdSt(id) {
+  const s = document.getElementById('xNS').value;
+  const key = xOrds.find(o=>(o.id||o.orderId)===id)?.id || id;
+  xDb.ref(`orders/${key}/status`).set(s).then(()=>{
+    xShowToast('✅ অর্ডার স্ট্যাটাস আপডেট হয়েছে');
+    xCloseModal('xODM');
+  }).catch(()=>xShowToast('❌ আপডেট ব্যর্থ','error'));
+}
+function xStBadge(s) {
+  const m = {'pending':'<span class="xsbg xsp">⏳ পেন্ডিং</span>','processing':'<span class="xsbg xspr">⚙️ প্রসেসিং</span>','shipped':'<span class="xsbg xss">🚚 শিপড</span>','delivered':'<span class="xsbg xsd">✅ ডেলিভারড</span>','cancelled':'<span class="xsbg xsc2">❌ বাতিল</span>'};
+  return m[s] || `<span class="xsbg xsp">${s||'পেন্ডিং'}</span>`;
+}
+
+// ============================================================
+// PRODUCTS
+// ============================================================
+function xRenderProds(prods) {
+  const tb = document.getElementById('xPrB');
+  if (!prods.length) { tb.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:30px;color:#aaa">কোনো পণ্য নেই</td></tr>`; return; }
+  tb.innerHTML = prods.map(p=>`
+    <tr>
+      <td><div class="xpt">${p.imageUrl?`<img src="${p.imageUrl}" alt="${p.name}" onerror="this.parentElement.textContent='${p.emoji||'📦'}'">`:p.emoji||'📦'}</div></td>
+      <td><span style="font-weight:600;font-size:13px">${p.name}</span></td>
+      <td><span style="background:#f5f5f5;padding:2px 8px;border-radius:4px;font-size:12px">${p.category||'-'}</span></td>
+      <td style="font-weight:700;color:var(--r)">৳${Number(p.price).toLocaleString()}</td>
+      <td style="color:#aaa;text-decoration:line-through;font-size:12px">${p.oldPrice?'৳'+Number(p.oldPrice).toLocaleString():'-'}</td>
+      <td>${p.flash?'<span style="color:var(--r);font-weight:700">✓</span>':'-'}</td>
+      <td>${p.newArrival?'<span style="color:var(--grn);font-weight:700">✓</span>':'-'}</td>
+      <td style="display:flex;gap:4px">
+        <button class="xbt xbo xbs" onclick="xOpenEditProd('${p.id}')"><i class="fa fa-edit"></i></button>
+        <button class="xbt xbd xbs" onclick="xDelProd('${p.id}','${p.name.replace(/'/g,'')}')"><i class="fa fa-trash"></i></button>
+      </td>
+    </tr>`).join('');
+}
+function xFilterProd() {
+  const q = document.getElementById('xPS').value.trim().toLowerCase();
+  if (!q) { xRenderProds(xProds); return; }
+  xRenderProds(xProds.filter(p=>p.name.toLowerCase().includes(q)||(p.category||'').toLowerCase().includes(q)));
+}
+function xOpenAddProd() {
+  document.getElementById('xPMT').textContent = 'নতুন পণ্য যোগ করুন';
+  document.getElementById('xEPI').value = '';
+  ['xPN','xPPr','xPOP','xPEm','xPSt','xPDs','xPSp','xPIU'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('xPCt').value='';
+  document.getElementById('xPFl').checked=false;
+  document.getElementById('xPNw').checked=false;
+  document.getElementById('xPPV').style.display='none';
+  document.getElementById('xPPUB').style.display='none';
+  xCPU='';
+  xOpenModal('xPM');
+}
+function xOpenEditProd(id) {
+  const p = xProds.find(x=>x.id===id);
+  if (!p) return;
+  document.getElementById('xPMT').textContent = 'পণ্য সম্পাদনা';
+  document.getElementById('xEPI').value = id;
+  document.getElementById('xPN').value = p.name||'';
+  document.getElementById('xPCt').value = p.category||'';
+  document.getElementById('xPPr').value = p.price||'';
+  document.getElementById('xPOP').value = p.oldPrice||'';
+  document.getElementById('xPEm').value = p.emoji||'';
+  document.getElementById('xPSt').value = p.stock||'';
+  document.getElementById('xPDs').value = p.description||'';
+  document.getElementById('xPSp').value = p.specs||'';
+  document.getElementById('xPFl').checked = !!p.flash;
+  document.getElementById('xPNw').checked = !!p.newArrival;
+  xCPU = p.imageUrl||'';
+  document.getElementById('xPIU').value = xCPU;
+  if (xCPU) {
+    document.getElementById('xPPV').src = xCPU;
+    document.getElementById('xPPV').style.display='block';
+    document.getElementById('xPPUB').style.display='block';
+    document.getElementById('xPPUBL').href = xCPU;
+    document.getElementById('xPPUBL').textContent = xCPU.substring(0,55)+'...';
+  } else {
+    document.getElementById('xPPV').style.display='none';
+    document.getElementById('xPPUB').style.display='none';
+  }
+  xOpenModal('xPM');
+}
+function xSaveProd() {
+  const n = document.getElementById('xPN').value.trim();
+  const c = document.getElementById('xPCt').value;
+  const p = parseFloat(document.getElementById('xPPr').value);
+  if (!n || !c || !p) { xShowToast('নাম, ক্যাটাগরি ও মূল্য আবশ্যক','error'); return; }
+  const data = {
+    name:n, category:c, price:p,
+    oldPrice: parseFloat(document.getElementById('xPOP').value)||0,
+    emoji: document.getElementById('xPEm').value.trim()||'📦',
+    stock: parseInt(document.getElementById('xPSt').value)||0,
+    description: document.getElementById('xPDs').value.trim(),
+    specs: document.getElementById('xPSp').value.trim(),
+    flash: document.getElementById('xPFl').checked,
+    newArrival: document.getElementById('xPNw').checked,
+    imageUrl: xCPU || '',
+    updatedAt: Date.now()
+  };
+  const eId = document.getElementById('xEPI').value;
+  const ref = eId ? xDb.ref(`products/${eId}`) : xDb.ref('products').push();
+  if (!eId) data.createdAt = Date.now();
+  ref.set(data).then(()=>{
+    xShowToast(eId?'✅ পণ্য আপডেট হয়েছে!':'✅ নতুন পণ্য যোগ হয়েছে!');
+    xCloseModal('xPM');
+  }).catch(()=>xShowToast('❌ সেভ ব্যর্থ','error'));
+}
+function xDelProd(id, name) {
+  if (!confirm(`"${name}" পণ্যটি মুছে ফেলবেন?`)) return;
+  xDb.ref(`products/${id}`).remove().then(()=>xShowToast('🗑️ পণ্য মুছে ফেলা হয়েছে')).catch(()=>xShowToast('❌ মুছতে ব্যর্থ','error'));
+}
+
+// ============================================================
+// IMAGE UPLOAD (Firebase Storage)
+// ============================================================
+function xHandleImgUpload(input, type) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5*1024*1024) { xShowToast('❌ ছবি ৫MB এর বেশি হবে না','error'); return; }
+  const isProd = type === 'product';
+  const pvId = isProd ? 'xPPV' : 'xGPV';
+  const prId = isProd ? 'xPUPR' : 'xGUPR';
+  const prbId = isProd ? 'xPUPRB' : 'xGUPRB';
+  const pubId = isProd ? 'xPPUB' : 'xGPUB';
+  const pblId = isProd ? 'xPPUBL' : 'xGPUBL';
+  const iuId = isProd ? 'xPIU' : 'xGIU';
+
+  // Preview
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById(pvId).src = e.target.result;
+    document.getElementById(pvId).style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+
+  if (!xFOK || !xStorage) { xShowToast('⚠️ Firebase Storage কনফিগার করুন','error'); return; }
+
+  document.getElementById(prId).style.display = 'block';
+  document.getElementById(prbId).style.width = '0%';
+
+  const folder = isProd ? 'products' : 'gifts';
+  const fileName = `${folder}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g,'_')}`;
+  const storageRef = xStorage.ref().child(fileName);
+  const task = storageRef.put(file);
+
+  task.on('state_changed',
+    snap => {
+      const pct = Math.round(snap.bytesTransferred/snap.totalBytes*100);
+      document.getElementById(prbId).style.width = pct + '%';
+    },
+    err => { xShowToast('❌ আপলোড ব্যর্থ: '+err.message,'error'); document.getElementById(prId).style.display='none'; },
+    () => {
+      task.snapshot.ref.getDownloadURL().then(url => {
+        if (isProd) xCPU = url; else xCGU = url;
+        document.getElementById(iuId).value = url;
+        document.getElementById(pubId).style.display = 'block';
+        document.getElementById(pblId).href = url;
+        document.getElementById(pblId).textContent = url.substring(0,55)+'...';
+        document.getElementById(prId).style.display = 'none';
+        xShowToast('✅ ছবি আপলোড সফল!');
+      });
+    }
+  );
+}
+function xCopyUrl(linkId) {
+  const url = document.getElementById(linkId).href;
+  navigator.clipboard.writeText(url).then(()=>xShowToast('🔗 ছবির লিঙ্ক কপি হয়েছে!'));
+}
+
+// ============================================================
+// GIFTS — Firestore + Storage
+// ============================================================
+async function xLoadGifts(cat, btn) {
+  // Update tab buttons
+  ['xGTAll','xGTMug','xGTCr','xGTFr','xGTOt'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) { el.className = 'xbt xbo'; }
+  });
+  if (btn) { btn.className = 'xbt xbp'; }
+  else if (cat==='all') { const el=document.getElementById('xGTAll'); if(el) el.className='xbt xbp'; }
+
+  const grid = document.getElementById('xGGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#aaa"><i class="fa fa-spinner fa-spin"></i> লোড হচ্ছে...</div>';
+
+  if (!xFOK || !xFs) { xRenderGiftAdmin([]); return; }
+  try {
+    let q = xFs.collection('gifts');
+    if (cat !== 'all') q = q.where('category','==',cat);
+    const snap = await q.get();
+    const items = [];
+    snap.forEach(doc => items.push({ id: doc.id, ...doc.data() }));
+    xRenderGiftAdmin(items);
+  } catch(e) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#aaa">⚠️ Firestore লোড ব্যর্থ: ${e.message}</div>`;
+  }
+}
+
+function xRenderGiftAdmin(items) {
+  const grid = document.getElementById('xGGrid');
+  if (!items.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:30px;color:#aaa"><i class="fa fa-gift" style="font-size:36px;display:block;margin-bottom:10px;color:#ddd"></i>কোনো গিফট পণ্য নেই। নতুন গিফট যোগ করুন।</div>';
+    return;
+  }
+  const catL = { mug:'☕ মগ', crest:'🏆 ক্রেস্ট', frame:'🖼 ফ্রেম', other:'✨ অন্যান্য' };
+  grid.innerHTML = items.map(g=>`
+    <div class="xgcard">
+      ${g.imageUrl ? `<img src="${g.imageUrl}" alt="${g.name}" onerror="this.style.display='none'">` : '<div style="width:100%;height:120px;background:#f0e0f8;display:flex;align-items:center;justify-content:center;font-size:36px">🎁</div>'}
+      <span class="xgcat">${catL[g.category]||g.category}</span>
+      <button class="xgcdel" onclick="xDelGift('${g.id}','${(g.name||'').replace(/'/g,'')}')"><i class="fa fa-trash"></i></button>
+      <div class="xgcinfo">
+        <h4>${g.name}</h4>
+        <p>৳${g.price||'যোগাযোগ'}</p>
+      </div>
+    </div>`).join('');
+}
+
+function xOpenAddGift() {
+  document.getElementById('xGEI').value = '';
+  document.getElementById('xGN').value = '';
+  document.getElementById('xGCat').value = 'mug';
+  document.getElementById('xGPr').value = '';
+  document.getElementById('xGIU').value = '';
+  document.getElementById('xGPV').style.display = 'none';
+  document.getElementById('xGPUB').style.display = 'none';
+  document.getElementById('xGIF').value = '';
+  xCGU = '';
+  xOpenModal('xGM');
+}
+
+async function xSaveGift() {
+  if (!xFOK || !xFs) { xShowToast('❌ Firebase সংযোগ নেই','error'); return; }
+  const n = document.getElementById('xGN').value.trim();
+  const cat = document.getElementById('xGCat').value;
+  const pr = document.getElementById('xGPr').value.trim();
+  const iu = xCGU || document.getElementById('xGIU').value.trim();
+  if (!n) { xShowToast('পণ্যের নাম দিন','error'); return; }
+  if (!iu) { xShowToast('ছবি আপলোড করুন','error'); return; }
+  const data = { name:n, category:cat, price:pr||'', imageUrl:iu, createdAt:Date.now() };
+  try {
+    await xFs.collection('gifts').add(data);
+    xShowToast('✅ গিফট Firestore এ সেভ হয়েছে!');
+    xCloseModal('xGM');
+    xLoadGifts('all');
+  } catch(e) {
+    xShowToast('❌ Firestore সেভ ব্যর্থ: '+e.message,'error');
+  }
+}
+
+async function xDelGift(id, name) {
+  if (!confirm(`"${name}" গিফট পণ্যটি মুছে ফেলবেন?`)) return;
+  try {
+    await xFs.collection('gifts').doc(id).delete();
+    xShowToast('🗑️ গিফট পণ্য মুছে ফেলা হয়েছে');
+    xLoadGifts('all');
+  } catch(e) {
+    xShowToast('❌ মুছতে ব্যর্থ: '+e.message,'error');
+  }
+}
+
+// ============================================================
+// USERS
+// ============================================================
+function xRenderUsers(users) {
+  const tb = document.getElementById('xUB');
+  if (!users.length) { tb.innerHTML=`<tr><td colspan="4" style="text-align:center;padding:24px;color:#aaa">কোনো ইউজার নেই</td></tr>`; return; }
+  tb.innerHTML = users.map(u=>`
+    <tr>
+      <td><span style="font-weight:600">${u.name||'-'}</span></td>
+      <td style="font-size:12px;color:#777">${u.email||'-'}</td>
+      <td>${u.phone||'-'}</td>
+      <td style="font-size:12px;color:#aaa">${u.createdAt?new Date(u.createdAt).toLocaleDateString('bn-BD'):'-'}</td>
+    </tr>`).join('');
+}
+function xFilterUsers() {
+  const q = document.getElementById('xUS').value.trim().toLowerCase();
+  if (!q) { xRenderUsers(xUsers); return; }
+  xRenderUsers(xUsers.filter(u=>(u.name||'').toLowerCase().includes(q)||(u.phone||'').includes(q)||(u.email||'').toLowerCase().includes(q)));
+}
+
+// ============================================================
+// ADMINS
+// ============================================================
+function xRenderAdmins() {
+  const el = document.getElementById('xAL');
+  if (!xAdmins.length) { el.innerHTML=`<div class="xeas"><i class="fa fa-user-shield"></i><p>কোনো এডমিন নেই</p></div>`; return; }
+  el.innerHTML = xAdmins.map(a=>`
+    <div class="xali">
+      <div class="xalinf">
+        <div class="xalav">${(a.name||a.email||'A')[0].toUpperCase()}</div>
+        <div>
+          <div class="xaln">${a.name||'নাম নেই'}</div>
+          <div class="xalp">${a.phone||a.email||''}</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="${a.role==='super'?'xsrb':'xjrb'}">${a.role==='super'?'👑 সুপার এডমিন':'🔰 জুনিয়র এডমিন'}</span>
+        ${(a.role!=='super' && xISA)?`<button class="xbt xbd xbs" onclick="xRemAdmin('${a.id}','${(a.name||'').replace(/'/g,'')}')"><i class="fa fa-trash"></i> সরান</button>`:''}
+      </div>
+    </div>`).join('');
+}
+function xOpenAddAdmin() {
+  if (!xISA) { xShowToast('❌ শুধুমাত্র সুপার এডমিন এটি করতে পারবেন','error'); return; }
+  document.getElementById('xNAP').value='';
+  document.getElementById('xNAN').value='';
+  xOpenModal('xAAM');
+}
+function xAddJrAdmin() {
+  const phone = document.getElementById('xNAP').value.trim();
+  const name = document.getElementById('xNAN').value.trim() || 'জুনিয়র এডমিন';
+  if (!phone) { xShowToast('ফোন নম্বর দিন','error'); return; }
+  const user = xUsers.find(u=>u.phone===phone);
+  if (!user) {
+    xDb.ref('admins').push().set({ name, phone, role:'junior', addedBy:xCU.uid, addedAt:Date.now() })
+      .then(()=>{ xShowToast('✅ জুনিয়র এডমিন যোগ হয়েছে!'); xCloseModal('xAAM'); })
+      .catch(()=>xShowToast('❌ যোগ করতে ব্যর্থ','error'));
+    return;
+  }
+  xDb.ref(`admins/${user.id}`).set({ name:user.name||name, email:user.email||'', phone, role:'junior', addedBy:xCU.uid, addedAt:Date.now() })
+    .then(()=>{ xShowToast('✅ জুনিয়র এডমিন যোগ হয়েছে!'); xCloseModal('xAAM'); })
+    .catch(()=>xShowToast('❌ যোগ করতে ব্যর্থ','error'));
+}
+function xRemAdmin(id, name) {
+  if (!xISA) return;
+  if (!confirm(`"${name}" কে এডমিন থেকে সরাবেন?`)) return;
+  xDb.ref(`admins/${id}`).remove().then(()=>xShowToast('✅ এডমিন সরানো হয়েছে')).catch(()=>xShowToast('❌ সরাতে ব্যর্থ','error'));
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function xSaveSettings() {
+  if (!xISA) { xShowToast('❌ শুধুমাত্র সুপার এডমিন সেটিংস পরিবর্তন করতে পারবেন','error'); return; }
+  const data = {
+    footerPhone: document.getElementById('xSPh').value.trim(),
+    footerEmail: document.getElementById('xSEm').value.trim(),
+    footerAddress: document.getElementById('xSAd').value.trim(),
+    footerHours: document.getElementById('xSHr').value.trim(),
+    facebook: document.getElementById('xSFb').value.trim(),
+    youtube: document.getElementById('xSYt').value.trim(),
+    whatsapp: document.getElementById('xSWa').value.trim(),
+    instagram: document.getElementById('xSIg').value.trim(),
+    topBar: document.getElementById('xSTB').value.trim(),
+    footerAbout: document.getElementById('xSAbt').value.trim(),
+    payment: {
+      method: document.getElementById('xSPM').value.trim(),
+      number: document.getElementById('xSPN').value.trim(),
+      instruction: document.getElementById('xSPI').value.trim()
+    },
+    updatedAt: Date.now()
+  };
+  xDb.ref('settings').set(data).then(()=>xShowToast('✅ সেটিংস সেভ হয়েছে!')).catch(()=>xShowToast('❌ সেভ ব্যর্থ','error'));
+}
+
+// ============================================================
+// TAB NAVIGATION
+// ============================================================
+function xShowTab(tab, el) {
+  document.querySelectorAll('.xpg').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.xni').forEach(n=>n.classList.remove('active'));
+  const pg = document.getElementById('xpg-'+tab);
+  if (pg) pg.classList.add('active');
+  if (el) el.classList.add('active');
+  const titles = { dashboard:'ড্যাশবোর্ড', orders:'অর্ডার সমূহ', products:'পণ্য ব্যবস্থাপনা', gifts:'গিফট ব্যবস্থাপনা', users:'কাস্টমার লিস্ট', admins:'এডমিন ব্যবস্থাপনা', settings:'সাইট সেটিংস' };
+  document.getElementById('xTBT').textContent = titles[tab]||tab;
+  xCloseSidebar();
+}
+
+// ============================================================
+// MODAL HELPERS
+// ============================================================
+function xOpenModal(id) { document.getElementById(id).classList.add('open'); }
+function xCloseModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.xmo').forEach(o=>{
+  o.addEventListener('click', e=>{ if(e.target===o) o.classList.remove('open'); });
+});
+
+// ============================================================
+// TOAST
+// ============================================================
+function xShowToast(msg, type='success') {
+  const t = document.getElementById('xToast');
+  t.textContent = msg;
+  t.className = 'xtst show ' + type;
+  setTimeout(()=>t.className='xtst',3200);
+}
+
+// Firebase not configured notice
+if (!xFOK) {
+  document.getElementById('xLE').textContent = '⚙️ Firebase কনফিগার সমস্যা। config চেক করুন।';
+  document.getElementById('xLE').style.display = 'block';
+}
+</script>
+</body>
+</html>
